@@ -2,12 +2,16 @@
 {% block title %}Login - Service Desk V2.1{% endblock %}
 {% block content %}
 <section class="auth-shell">
-  <form method="post" class="panel narrow">
+  <form method="post" class="card border-0 shadow-sm mb-4 narrow">
     {{ form.hidden_tag() }}
-    <h1>Entrar</h1>
-    <label>{{ form.email.label }}{{ form.email(autocomplete="email") }}</label>
-    <label>{{ form.password.label }}{{ form.password(autocomplete="current-password") }}</label>
-    {{ form.submit(class="primary full") }}
+    <div class="card-header bg-white py-3 fw-bold text-dark">
+      <i class="fa-solid fa-right-to-bracket me-2 text-primary"></i>Entrar
+    </div>
+    <div class="card-body p-4">
+      <div class="mb-3">{{ form.email.label(class="form-label fw-bold small text-muted text-uppercase") }}{{ form.email(class="form-control form-control-lg bg-light border-0", autocomplete="email") }}</div>
+      <div class="mb-4">{{ form.password.label(class="form-label fw-bold small text-muted text-uppercase") }}{{ form.password(class="form-control form-control-lg bg-light border-0", autocomplete="current-password") }}</div>
+      <button type="submit" class="btn btn-primary fw-bold shadow-sm w-100"><i class="fa-solid fa-arrow-right-to-bracket me-2"></i>Entrar</button>
+    </div>
   </form>
 </section>
 {% endblock %}

@@ -31,7 +31,7 @@
           </div>
         </div>
       </div>
-      {{ category_form.submit(class="primary") }}
+      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ category_form.submit.label.text }}</button>
     </form>
   </section>
 
@@ -42,7 +42,7 @@
       <label>{{ branch_form.name.label }}{{ branch_form.name() }}</label>
       <label>{{ branch_form.kind.label }}{{ branch_form.kind() }}</label>
       <label class="check">{{ branch_form.active() }} {{ branch_form.active.label.text }}</label>
-      {{ branch_form.submit(class="primary") }}
+      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ branch_form.submit.label.text }}</button>
     </form>
   </section>
 </div>

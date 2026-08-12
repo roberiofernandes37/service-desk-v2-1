@@ -24,7 +24,9 @@
     {% if not editing %}
       <label class="wide">{{ form.initial_file.label }}{{ form.initial_file() }}</label>
     {% endif %}
-    <div class="wide actions">{{ form.submit(class="primary") }}</div>
+    <div class="wide actions">
+      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ form.submit.label.text }}</button>
+    </div>
   </form>
 </section>
 

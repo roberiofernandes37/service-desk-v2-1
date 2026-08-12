@@ -17,7 +17,7 @@
       <label>{{ form.password.label }}{{ form.password() }}</label>
       <label>{{ form.profile_id.label }}{{ form.profile_id() }}</label>
       <label class="check">{{ form.active() }} {{ form.active.label.text }}</label>
-      {{ form.submit(class="primary") }}
+      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-user-plus me-2"></i>{{ form.submit.label.text }}</button>
     </form>
   </section>
 
@@ -31,7 +31,7 @@
       <label class="check">{{ profile_form.can_work_tickets() }} {{ profile_form.can_work_tickets.label.text }}</label>
       <label class="check">{{ profile_form.can_view_reports() }} {{ profile_form.can_view_reports.label.text }}</label>
       <label class="check">{{ profile_form.can_reset_data() }} {{ profile_form.can_reset_data.label.text }}</label>
-      {{ profile_form.submit(class="primary") }}
+      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ profile_form.submit.label.text }}</button>
     </form>
     <hr>
     <ul class="plain-list profile-list">
@@ -58,17 +58,17 @@
 
 <section class="panel">
   <h2>Usuarios</h2>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th>Acoes</th></tr></thead>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th class="px-4">Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th class="px-4">Acoes</th></tr></thead>
       <tbody>
         {% for user in users %}
           <tr>
-            <td>{{ user.name }}</td>
+            <td class="px-4">{{ user.name }}</td>
             <td>{{ user.email }}</td>
             <td>{{ user.profile.name }}</td>
             <td>{{ "Sim" if user.active else "Nao" }}</td>
-            <td>
+            <td class="px-4">
               <div class="row-actions">
                 <a class="small-button" href="{{ url_for('admin.edit_user', user_id=user.id) }}">Editar</a>
                 <a class="small-button" href="{{ url_for('admin.reset_user_password', user_id=user.id) }}">Senha</a>
@@ -82,7 +82,7 @@
             </td>
           </tr>
         {% else %}
-          <tr><td colspan="5" class="empty">Nenhum usuario.</td></tr>
+          <tr><td colspan="5" class="empty text-center text-muted py-4">Nenhum usuario.</td></tr>
         {% endfor %}
       </tbody>
     </table>

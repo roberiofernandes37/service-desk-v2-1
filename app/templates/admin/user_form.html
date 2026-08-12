@@ -17,7 +17,7 @@
     <label>{{ form.email.label }}{{ form.email() }}</label>
     <label>{{ form.profile_id.label }}{{ form.profile_id() }}</label>
     <label class="check">{{ form.active() }} {{ form.active.label.text }}</label>
-    {{ form.submit(class="primary") }}
+    <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ form.submit.label.text }}</button>
   </form>
 </section>
 {% endblock %}

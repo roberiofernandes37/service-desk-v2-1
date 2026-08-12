@@ -1,9 +1,9 @@
-<div class="table-wrap">
+<div class="table-responsive">
   {% set rows = tickets if tickets is defined else recent %}
-  <table>
-    <thead>
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
       <tr>
-        <th>ID</th>
+        <th class="px-4">ID</th>
         <th class="col-title">Titulo</th>
         <th>Status</th>
         <th>Prioridade</th>
@@ -11,14 +11,14 @@
         <th>Responsavel</th>
         <th class="col-fields">Campos da categoria</th>
         <th>Prazo</th>
-        <th></th>
+        <th class="px-4"></th>
       </tr>
     </thead>
     <tbody>
       {% for ticket in rows %}
         {% set sla = sla_state(ticket) %}
         <tr>
-          <td>#{{ ticket.id }}</td>
+          <td class="px-4 fw-bold text-muted">#{{ ticket.id }}</td>
           <td class="ticket-title">{{ ticket.title }}</td>
           <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
           <td>{{ ticket.priority }}</td>
@@ -37,10 +37,10 @@
             <span>{{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
             <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
           </td>
-          <td><a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">Abrir</a></td>
+          <td class="px-4"><a class="btn btn-sm btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}"><i class="fa-solid fa-folder-open me-2"></i>Abrir</a></td>
         </tr>
       {% else %}
-        <tr><td colspan="9" class="empty">Nenhuma solicitacao encontrada.</td></tr>
+        <tr><td colspan="9" class="empty text-center text-muted py-4">Nenhuma solicitacao encontrada.</td></tr>
       {% endfor %}
     </tbody>
   </table>

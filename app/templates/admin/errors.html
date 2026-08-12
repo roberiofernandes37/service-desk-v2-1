@@ -6,7 +6,7 @@
     <p>Diagnostico tecnico para manutencao e analise de falhas.</p>
   </div>
   <div class="title-actions">
-    <a class="button" href="{{ url_for('admin.export_error_csv', q=filters.q, error_type=filters.error_type, user_id=filters.user_id or '', resolved=filters.resolved) }}">Exportar CSV</a>
+    <a class="btn btn-primary fw-bold shadow-sm" href="{{ url_for('admin.export_error_csv', q=filters.q, error_type=filters.error_type, user_id=filters.user_id or '', resolved=filters.resolved) }}"><i class="fa-solid fa-file-csv me-2"></i>Exportar CSV</a>
   </div>
 </section>
 
@@ -37,32 +37,32 @@
     <h2>{{ pagination.total }} erro{{ "" if pagination.total == 1 else "s" }}</h2>
     <span class="muted">Pagina {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
   </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
         <tr>
-          <th>Data</th>
+          <th class="px-4">Data</th>
           <th>Status</th>
           <th>Usuario</th>
           <th>Tipo</th>
           <th>Mensagem</th>
           <th>Rota</th>
-          <th></th>
+          <th class="px-4"></th>
         </tr>
       </thead>
       <tbody>
         {% for log in logs %}
           <tr>
-            <td>{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="px-4">{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
             <td><span class="badge {{ 'status-concluida' if log.resolved else 'status-pausada' }}">{{ "Resolvido" if log.resolved else "Pendente" }}</span></td>
             <td>{{ log.user_name or (log.user.name if log.user else "-") }}</td>
             <td>{{ log.error_type }}</td>
             <td class="ticket-title">{{ log.error_message }}</td>
             <td>{{ log.method or "-" }} {{ log.path or "-" }}</td>
-            <td><a class="small-button" href="{{ url_for('admin.error_detail', log_id=log.id) }}">Abrir</a></td>
+            <td class="px-4"><a class="btn btn-sm btn-primary fw-bold shadow-sm" href="{{ url_for('admin.error_detail', log_id=log.id) }}"><i class="fa-solid fa-folder-open me-2"></i>Abrir</a></td>
           </tr>
         {% else %}
-          <tr><td colspan="7" class="empty">Nenhum erro registrado.</td></tr>
+          <tr><td colspan="7" class="empty text-center text-muted py-4">Nenhum erro registrado.</td></tr>
         {% endfor %}
       </tbody>
     </table>

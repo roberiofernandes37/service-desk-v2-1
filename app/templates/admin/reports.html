@@ -6,8 +6,8 @@
     <p>SLA, volume e distribuicao das solicitacoes.</p>
   </div>
   <div class="title-actions">
-    <a class="button" href="{{ url_for('tickets.export_csv') }}">Exportar CSV</a>
-    <a class="button" href="{{ url_for('admin.audit_logs') }}">Auditoria</a>
+    <a class="btn btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.export_csv') }}"><i class="fa-solid fa-file-csv me-2"></i>Exportar CSV</a>
+    <a class="btn btn-light fw-bold shadow-sm" href="{{ url_for('admin.audit_logs') }}"><i class="fa-solid fa-shield-halved me-2"></i>Auditoria</a>
   </div>
 </section>
 
@@ -71,25 +71,25 @@
     <h2>Atrasadas mais antigas</h2>
     <a href="{{ url_for('tickets.list_tickets', status='') }}">Ver fila</a>
   </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
         <tr>
-          <th>ID</th>
+          <th class="px-4">ID</th>
           <th>Titulo</th>
           <th>Status</th>
           <th>Prioridade</th>
           <th>Solicitante</th>
           <th>Responsavel</th>
           <th>Prazo</th>
-          <th></th>
+          <th class="px-4"></th>
         </tr>
       </thead>
       <tbody>
         {% for ticket in metrics.oldest_overdue %}
           {% set sla = sla_state(ticket) %}
           <tr>
-            <td>#{{ ticket.id }}</td>
+            <td class="px-4 fw-bold text-muted">#{{ ticket.id }}</td>
             <td>{{ ticket.title }}</td>
             <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
             <td>{{ ticket.priority }}</td>
@@ -99,10 +99,10 @@
               <span>{{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
               <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
             </td>
-            <td><a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">Abrir</a></td>
+            <td class="px-4"><a class="btn btn-sm btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}"><i class="fa-solid fa-folder-open me-2"></i>Abrir</a></td>
           </tr>
         {% else %}
-          <tr><td colspan="8" class="empty">Nenhuma solicitacao atrasada.</td></tr>
+          <tr><td colspan="8" class="empty text-center text-muted py-4">Nenhuma solicitacao atrasada.</td></tr>
         {% endfor %}
       </tbody>
     </table>
