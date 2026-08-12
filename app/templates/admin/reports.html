@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Relatorios operacionais</h1>
+    <p>SLA, volume e distribuicao das solicitacoes.</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('tickets.export_csv') }}">Exportar CSV</a>
+    <a class="button" href="{{ url_for('admin.audit_logs') }}">Auditoria</a>
+  </div>
+</section>
+
+<section class="metrics">
+  <div class="metric-card"><strong>{{ metrics.total }}</strong><span>Total</span></div>
+  <div class="metric-card"><strong>{{ metrics.active }}</strong><span>Ativas</span></div>
+  <div class="metric-card"><strong>{{ metrics.concluded }}</strong><span>Concluidas</span></div>
+  <div class="metric-card warning"><strong>{{ metrics.due_today }}</strong><span>Vencem hoje</span></div>
+  <div class="metric-card danger"><strong>{{ metrics.overdue }}</strong><span>Atrasadas</span></div>
+</section>
+
+<section class="report-grid">
+  <article class="panel">
+    <h2>SLA geral</h2>
+    <div class="kpi-line">
+      <strong>{{ metrics.sla_percent }}%</strong>
+      <span>dentro do prazo</span>
+    </div>
+    <div class="bar">
+      <span style="width: {{ metrics.sla_percent }}%"></span>
+    </div>
+    <p class="muted">{{ metrics.overdue_percent }}% das solicitacoes estao atrasadas.</p>
+  </article>
+
+  <article class="panel">
+    <h2>Por status</h2>
+    <ul class="plain-list metric-list">
+      {% for name, count in metrics.by_status.items() %}
+        <li><span>{{ name }}</span><strong>{{ count }}</strong></li>
+      {% else %}
+        <li>Nenhum dado.</li>
+      {% endfor %}
+    </ul>
+  </article>
+
+  <article class="panel">
+    <h2>Por prioridade</h2>
+    <ul class="plain-list metric-list">
+      {% for name, count in metrics.by_priority.items() %}
+        <li><span>{{ name }}</span><strong>{{ count }}</strong></li>
+      {% else %}
+        <li>Nenhum dado.</li>
+      {% endfor %}
+    </ul>
+  </article>
+
+  <article class="panel">
+    <h2>Top categorias</h2>
+    <ul class="plain-list metric-list">
+      {% for name, count in metrics.by_category %}
+        <li><span>{{ name }}</span><strong>{{ count }}</strong></li>
+      {% else %}
+        <li>Nenhum dado.</li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Atrasadas mais antigas</h2>
+    <a href="{{ url_for('tickets.list_tickets', status='') }}">Ver fila</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Titulo</th>
+          <th>Status</th>
+          <th>Prioridade</th>
+          <th>Solicitante</th>
+          <th>Responsavel</th>
+          <th>Prazo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ticket in metrics.oldest_overdue %}
+          {% set sla = sla_state(ticket) %}
+          <tr>
+            <td>#{{ ticket.id }}</td>
+            <td>{{ ticket.title }}</td>
+            <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
+            <td>{{ ticket.priority }}</td>
+            <td>{{ ticket.requester.name if ticket.requester else "-" }}</td>
+            <td>{{ ticket.assignee.name if ticket.assignee else "-" }}</td>
+            <td>
+              <span>{{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
+              <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
+            </td>
+            <td><a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">Abrir</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="empty">Nenhuma solicitacao atrasada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

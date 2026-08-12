@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Editar perfil</h1>
+    <p>{{ profile.name }}</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.users') }}">Voltar</a>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <form method="post" class="stack">
+    {{ form.hidden_tag() }}
+    <label>{{ form.name.label }}{{ form.name() }}</label>
+    <label class="check">{{ form.can_manage_users() }} {{ form.can_manage_users.label.text }}</label>
+    <label class="check">{{ form.can_manage_settings() }} {{ form.can_manage_settings.label.text }}</label>
+    <label class="check">{{ form.can_work_tickets() }} {{ form.can_work_tickets.label.text }}</label>
+    <label class="check">{{ form.can_view_reports() }} {{ form.can_view_reports.label.text }}</label>
+    <label class="check">{{ form.can_reset_data() }} {{ form.can_reset_data.label.text }}</label>
+    {{ form.submit(class="primary") }}
+  </form>
+</section>
+{% endblock %}

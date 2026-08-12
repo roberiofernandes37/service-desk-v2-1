@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Editar filial</h1>
+    <p>{{ branch.name }}</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.settings') }}">Voltar</a>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <form method="post" class="stack">
+    {{ form.hidden_tag() }}
+    <label>{{ form.name.label }}{{ form.name() }}</label>
+    <label>{{ form.kind.label }}{{ form.kind() }}</label>
+    <label class="check">{{ form.active() }} {{ form.active.label.text }}</label>
+    {{ form.submit(class="primary") }}
+  </form>
+</section>
+{% endblock %}

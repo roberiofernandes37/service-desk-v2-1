@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Auditoria</h1>
+    <p>Ultimas acoes registradas no sistema.</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.export_audit_csv', entity=filters.entity, action=filters.action, user_id=filters.user_id or '', entity_id=filters.entity_id or '') }}">Exportar CSV</a>
+  </div>
+</section>
+
+<form method="get" class="filters audit-filters">
+  <select name="entity">
+    <option value="">Todas entidades</option>
+    {% for entity in entities %}
+      <option value="{{ entity }}" {% if filters.entity == entity %}selected{% endif %}>{{ entity }}</option>
+    {% endfor %}
+  </select>
+  <select name="action">
+    <option value="">Todas acoes</option>
+    {% for action in actions %}
+      <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>{{ action }}</option>
+    {% endfor %}
+  </select>
+  <select name="user_id">
+    <option value="">Todos usuarios</option>
+    {% for user in users %}
+      <option value="{{ user.id }}" {% if filters.user_id == user.id %}selected{% endif %}>{{ user.name }}</option>
+    {% endfor %}
+  </select>
+  <input name="entity_id" value="{{ filters.entity_id or '' }}" placeholder="ID da entidade">
+  <button type="submit">Filtrar</button>
+</form>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ pagination.total }} registro{{ "" if pagination.total == 1 else "s" }}</h2>
+    <span class="muted">Pagina {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Usuario</th>
+          <th>Entidade</th>
+          <th>ID</th>
+          <th>Acao</th>
+          <th>IP</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+          <tr>
+            <td>{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ log.user.name if log.user else "-" }}</td>
+            <td>{{ log.entity }}</td>
+            <td>{{ log.entity_id if log.entity_id is not none else "-" }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.ip_address or "-" }}</td>
+            <td><a class="small-button" href="{{ url_for('admin.audit_detail', log_id=log.id) }}">Abrir</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="empty">Nenhum registro de auditoria.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+    <nav class="pagination">
+      {% if pagination.has_prev %}
+        <a class="button" href="{{ url_for('admin.audit_logs', page=pagination.prev_num, entity=filters.entity, action=filters.action, user_id=filters.user_id or '', entity_id=filters.entity_id or '') }}">Anterior</a>
+      {% else %}
+        <span class="button disabled">Anterior</span>
+      {% endif %}
+      <span>{{ pagination.first }}-{{ pagination.last }} de {{ pagination.total }}</span>
+      {% if pagination.has_next %}
+        <a class="button" href="{{ url_for('admin.audit_logs', page=pagination.next_num, entity=filters.entity, action=filters.action, user_id=filters.user_id or '', entity_id=filters.entity_id or '') }}">Proxima</a>
+      {% else %}
+        <span class="button disabled">Proxima</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

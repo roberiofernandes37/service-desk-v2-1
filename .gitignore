@@ -1,0 +1,12 @@
+.env
+instance/
+uploads/
+backups/
+__pycache__/
+*.pyc
+*.pyo
+*.sqlite3
+*.db
+.pytest_cache/
+.coverage
+htmlcov/

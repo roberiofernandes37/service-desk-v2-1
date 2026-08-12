@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Avisos</h1>
+    <p>Notificacoes internas sobre solicitacoes e comentarios.</p>
+  </div>
+  <form method="post" action="{{ url_for('main.read_all_notifications') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="button">Marcar todos como lidos</button>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="notification-list">
+    {% for notification in notifications %}
+      <article class="{% if notification.is_unread %}unread{% endif %}">
+        <div>
+          <strong>{{ notification.title }}</strong>
+          <p>{{ notification.message }}</p>
+          <span>{{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        <form method="post" action="{{ url_for('main.read_notification', notification_id=notification.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="small-button">{{ "Abrir" if notification.ticket_id else "Ler" }}</button>
+        </form>
+      </article>
+    {% else %}
+      <p class="empty">Nenhum aviso registrado.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

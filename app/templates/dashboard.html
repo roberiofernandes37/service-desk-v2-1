@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Painel de controle</h1>
+    <p>Fila operacional, SLA e andamento das solicitacoes.</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('tickets.kanban') }}">Kanban</a>
+    <a class="button" href="{{ url_for('tickets.export_csv') }}">Exportar CSV</a>
+    <a class="primary button" href="{{ url_for('tickets.create_ticket') }}">Nova solicitacao</a>
+  </div>
+</section>
+
+<section class="metrics dashboard-metrics">
+  <a class="metric-card danger" href="{{ url_for('tickets.list_tickets', due_state='overdue') }}"><span>Atrasadas</span><strong>{{ counts.atrasadas }}</strong></a>
+  <a class="metric-card info" href="{{ url_for('tickets.list_tickets', status='Aberta') }}"><span>Abertas na fila</span><strong>{{ counts.abertas }}</strong></a>
+  <a class="metric-card primary-fill" href="{{ url_for('tickets.list_tickets', status='Em Andamento') }}"><span>Assumidas</span><strong>{{ counts.andamento }}</strong></a>
+  <a class="metric-card warning" href="{{ url_for('tickets.list_tickets', status='Pausada') }}"><span>Pausadas</span><strong>{{ counts.pausadas }}</strong></a>
+  <a class="metric-card success" href="{{ url_for('tickets.list_tickets', status='Concluida') }}"><span>Concluidas</span><strong>{{ counts.concluidas }}</strong></a>
+</section>
+
+<section class="dashboard-charts">
+  <article class="panel chart-panel">
+    <div class="panel-head">
+      <h2>Fila pendente por solicitante</h2>
+      <span class="live-badge">Ativas</span>
+    </div>
+    {% if charts.pending_by_requester["total"] %}
+      <div class="donut-chart-wrap">
+        <div class="donut-chart" style="--segments: {{ charts.pending_by_requester['gradient'] }};">
+          <span>{{ charts.pending_by_requester["total"] }}</span>
+        </div>
+        <ul class="chart-legend">
+          {% for item in charts.pending_by_requester["rows"] %}
+            <li>
+              <span class="legend-color" style="--legend-color: {{ item.color }}"></span>
+              <span>{{ item.label }}</span>
+              <strong>{{ item.count }}</strong>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% else %}
+      <p class="empty small-empty">Nenhuma solicitacao ativa.</p>
+    {% endif %}
+  </article>
+
+  <article class="panel chart-panel">
+    <div class="panel-head">
+      <h2>Carga de trabalho ativa</h2>
+      <span class="live-badge">Sem finalizadas</span>
+    </div>
+    {% if charts.active_workload["total"] %}
+      <div class="bar-chart">
+        {% for item in charts.active_workload["rows"] %}
+          <div class="bar-row">
+            <span>{{ item.label }}</span>
+            <div><i style="--bar-width: {{ item.bar_percent }}%; --bar-color: {{ item.color }}"></i></div>
+            <strong>{{ item.count }}</strong>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty small-empty">Nenhuma demanda em andamento ou pausada.</p>
+    {% endif %}
+  </article>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Ultimas solicitacoes</h2>
+    <a href="{{ url_for('tickets.list_tickets') }}">Ver todas</a>
+  </div>
+  {% include "tickets/_table.html" with context %}
+</section>
+
+<script>
+  (function () {
+    function cameFromBrowserHistory() {
+      if (!window.performance || !performance.getEntriesByType) return false;
+      var navigation = performance.getEntriesByType("navigation")[0];
+      return navigation && navigation.type === "back_forward";
+    }
+
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted || cameFromBrowserHistory()) {
+        window.location.reload();
+      }
+    });
+  })();
+</script>
+{% endblock %}

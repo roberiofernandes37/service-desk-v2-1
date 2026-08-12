@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: service_desk_v2_1
+      POSTGRES_USER: service_desk
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U service_desk -d service_desk_v2_1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    ports:
+      - "8091:8000"
+    environment:
+      FLASK_ENV: production
+      FLASK_APP: wsgi:app
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      DATABASE_URL: postgresql://service_desk:${POSTGRES_PASSWORD}@db:5432/service_desk_v2_1
+      UPLOAD_ROOT: /srv/service-desk/uploads
+      LOG_ROOT: /srv/service-desk/logs
+      BACKUP_ROOT: /srv/service-desk/backups
+      MAX_UPLOAD_MB: 10
+      COOKIE_SECURE: "false"
+    volumes:
+      - uploads_data:/srv/service-desk/uploads
+      - logs_data:/srv/service-desk/logs
+      - backups_data:/srv/service-desk/backups
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  uploads_data:
+  logs_data:
+  backups_data:

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Solicitacoes</h1>
+    <p>Consulta operacional com filtros e paginacao.</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('tickets.kanban', q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Kanban</a>
+    <a class="button" href="{{ url_for('tickets.export_csv', q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Exportar CSV</a>
+    <a class="primary button" href="{{ url_for('tickets.create_ticket') }}">Nova</a>
+  </div>
+</section>
+
+{% set quick_filter_endpoint = 'tickets.list_tickets' %}
+{% include "tickets/_quick_filters.html" %}
+
+<form method="get" class="filters advanced">
+  <input name="q" value="{{ filters.q }}" placeholder="Buscar por titulo ou descricao">
+  <select name="status">
+    <option value="">Todos os status</option>
+    {% for option in statuses %}
+      <option value="{{ option }}" {% if filters.status == option %}selected{% endif %}>{{ option }}</option>
+    {% endfor %}
+  </select>
+  <select name="priority">
+    <option value="">Todas prioridades</option>
+    {% for option in priorities %}
+      <option value="{{ option }}" {% if filters.priority == option %}selected{% endif %}>{{ option }}</option>
+    {% endfor %}
+  </select>
+  <select name="due_state">
+    {% for value, label in due_states %}
+      <option value="{{ value }}" {% if filters.due_state == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="sort">
+    {% for value, label in sort_options %}
+      <option value="{{ value }}" {% if filters.sort == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <select name="category_id">
+    <option value="">Todas categorias</option>
+    {% for category in categories %}
+      <option value="{{ category.id }}" {% if filters.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="branch_id">
+    <option value="">Todas filiais</option>
+    <option value="-1" {% if filters.branch_id == -1 %}selected{% endif %}>Geral</option>
+    {% for branch in branches %}
+      <option value="{{ branch.id }}" {% if filters.branch_id == branch.id %}selected{% endif %}>{{ branch.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="requester_id">
+    <option value="">Todos solicitantes</option>
+    {% for requester in requesters %}
+      <option value="{{ requester.id }}" {% if filters.requester_id == requester.id %}selected{% endif %}>{{ requester.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="assignee_id">
+    <option value="">Todos responsaveis</option>
+    <option value="-1" {% if filters.assignee_id == -1 %}selected{% endif %}>Sem responsavel</option>
+    {% for assignee in assignees %}
+      <option value="{{ assignee.id }}" {% if filters.assignee_id == assignee.id %}selected{% endif %}>{{ assignee.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Filtrar</button>
+</form>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>{{ pagination.total }} solicitacao{{ "" if pagination.total == 1 else "es" }}</h2>
+    <span class="muted">Pagina {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
+  </div>
+  {% include "tickets/_table.html" %}
+  {% if pagination.pages > 1 %}
+    <nav class="pagination">
+      {% if pagination.has_prev %}
+        <a class="button" href="{{ url_for('tickets.list_tickets', page=pagination.prev_num, q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Anterior</a>
+      {% else %}
+        <span class="button disabled">Anterior</span>
+      {% endif %}
+      <span>{{ pagination.first }}-{{ pagination.last }} de {{ pagination.total }}</span>
+      {% if pagination.has_next %}
+        <a class="button" href="{{ url_for('tickets.list_tickets', page=pagination.next_num, q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Proxima</a>
+      {% else %}
+        <span class="button disabled">Proxima</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

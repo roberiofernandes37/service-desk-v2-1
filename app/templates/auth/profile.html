@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel narrow">
+  <h1>Meu perfil</h1>
+  <p class="muted">{{ current_user.name }} · {{ current_user.email }}</p>
+  <form method="post" class="stack">
+    {{ form.hidden_tag() }}
+    <label>{{ form.current_password.label }}{{ form.current_password() }}</label>
+    <label>{{ form.new_password.label }}{{ form.new_password() }}</label>
+    <label>{{ form.confirm_password.label }}{{ form.confirm_password() }}</label>
+    {{ form.submit(class="primary") }}
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Parametros</h1>
+    <p>Categorias e filiais usadas nas solicitacoes.</p>
+  </div>
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Nova categoria</h2>
+    <form method="post" class="stack">
+      {{ category_form.hidden_tag() }}
+      <label>{{ category_form.name.label }}{{ category_form.name() }}</label>
+      <label class="check">{{ category_form.active() }} {{ category_form.active.label.text }}</label>
+      <div class="field-builder">
+        <div class="builder-head">
+          <strong>Campos da categoria</strong>
+          <button type="button" class="small-button" data-add-field="new-category-fields">Adicionar campo</button>
+        </div>
+        <div id="new-category-fields" class="field-list">
+          <div class="field-row">
+            <input name="field_name[]" placeholder="Nome do campo">
+            <select name="field_type[]">
+              <option value="text">Texto</option>
+              <option value="number">Numero</option>
+              <option value="date">Data</option>
+            </select>
+            <label class="check"><input type="checkbox" name="field_required[]" value="0"> Obrigatorio</label>
+          </div>
+        </div>
+      </div>
+      {{ category_form.submit(class="primary") }}
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Nova filial</h2>
+    <form method="post" class="stack">
+      {{ branch_form.hidden_tag() }}
+      <label>{{ branch_form.name.label }}{{ branch_form.name() }}</label>
+      <label>{{ branch_form.kind.label }}{{ branch_form.kind() }}</label>
+      <label class="check">{{ branch_form.active() }} {{ branch_form.active.label.text }}</label>
+      {{ branch_form.submit(class="primary") }}
+    </form>
+  </section>
+</div>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Categorias</h2>
+    <ul class="plain-list">
+      {% for category in categories %}
+        <li class="list-action">
+          <div>
+            <strong>{{ category.name }}</strong>
+            <span>{{ "ativa" if category.active else "inativa" }} - {{ category.fields|length }} campos</span>
+          </div>
+          <div class="row-actions">
+            <a class="small-button" href="{{ url_for('admin.edit_category', category_id=category.id) }}">Editar</a>
+            <details>
+              <summary class="small-button">Campos</summary>
+              <form method="post" action="{{ url_for('admin.update_category_fields', category_id=category.id) }}" class="field-editor">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div id="fields-category-{{ category.id }}" class="field-list">
+                  {% for field in category.fields %}
+                    <div class="field-row">
+                      <input type="hidden" name="edit_field_id[]" value="{{ field.id }}">
+                      <input name="edit_field_name[]" value="{{ field.name }}" placeholder="Nome do campo">
+                      <select name="edit_field_type[]">
+                        <option value="text" {% if field.field_type == "text" %}selected{% endif %}>Texto</option>
+                        <option value="number" {% if field.field_type == "number" %}selected{% endif %}>Numero</option>
+                        <option value="date" {% if field.field_type == "date" %}selected{% endif %}>Data</option>
+                      </select>
+                      <label class="check"><input type="checkbox" name="edit_field_required[]" value="{{ loop.index0 }}" {% if field.required %}checked{% endif %}> Obrigatorio</label>
+                    </div>
+                  {% else %}
+                    <div class="field-row">
+                      <input type="hidden" name="edit_field_id[]" value="">
+                      <input name="edit_field_name[]" placeholder="Nome do campo">
+                      <select name="edit_field_type[]">
+                        <option value="text">Texto</option>
+                        <option value="number">Numero</option>
+                        <option value="date">Data</option>
+                      </select>
+                      <label class="check"><input type="checkbox" name="edit_field_required[]" value="0"> Obrigatorio</label>
+                    </div>
+                  {% endfor %}
+                </div>
+                <button type="button" class="small-button" data-add-edit-field="fields-category-{{ category.id }}">Adicionar campo</button>
+                <button type="submit" class="primary">Salvar campos</button>
+              </form>
+            </details>
+            <form method="post" action="{{ url_for('admin.toggle_category', category_id=category.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="small-button">{{ "Desativar" if category.active else "Ativar" }}</button>
+            </form>
+          </div>
+        </li>
+      {% else %}
+        <li>Nenhuma categoria.</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="panel">
+    <h2>Filiais</h2>
+    <ul class="plain-list">
+      {% for branch in branches %}
+        <li class="list-action">
+          <span>{{ branch.name }} - {{ branch.kind }} - {{ "ativa" if branch.active else "inativa" }}</span>
+          <div class="row-actions">
+            <a class="small-button" href="{{ url_for('admin.edit_branch', branch_id=branch.id) }}">Editar</a>
+            <form method="post" action="{{ url_for('admin.toggle_branch', branch_id=branch.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="small-button">{{ "Desativar" if branch.active else "Ativar" }}</button>
+            </form>
+          </div>
+        </li>
+      {% else %}
+        <li>Nenhuma filial.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<script>
+  function makeFieldRow(prefix, index) {
+    const suffix = prefix === 'edit' ? 'edit_field' : 'field';
+    return `
+      <div class="field-row">
+        ${prefix === 'edit' ? '<input type="hidden" name="edit_field_id[]" value="">' : ''}
+        <input name="${suffix}_name[]" placeholder="Nome do campo">
+        <select name="${suffix}_type[]">
+          <option value="text">Texto</option>
+          <option value="number">Numero</option>
+          <option value="date">Data</option>
+        </select>
+        <label class="check"><input type="checkbox" name="${suffix}_required[]" value="${index}"> Obrigatorio</label>
+      </div>
+    `;
+  }
+
+  document.querySelectorAll('[data-add-field]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.addField);
+      target.insertAdjacentHTML('beforeend', makeFieldRow('new', target.children.length));
+    });
+  });
+
+  document.querySelectorAll('[data-add-edit-field]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const target = document.getElementById(button.dataset.addEditField);
+      target.insertAdjacentHTML('beforeend', makeFieldRow('edit', target.children.length));
+    });
+  });
+</script>
+{% endblock %}

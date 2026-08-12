@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Detalhe da auditoria</h1>
+    <p>{{ log.entity }} #{{ log.entity_id if log.entity_id is not none else "-" }} - {{ log.action }}</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.audit_logs') }}">Voltar</a>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="audit-meta">
+    <div><strong>Data</strong><span>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</span></div>
+    <div><strong>Usuario</strong><span>{{ log.user.name if log.user else "-" }}</span></div>
+    <div><strong>Entidade</strong><span>{{ log.entity }}</span></div>
+    <div><strong>ID</strong><span>{{ log.entity_id if log.entity_id is not none else "-" }}</span></div>
+    <div><strong>Acao</strong><span>{{ log.action }}</span></div>
+    <div><strong>IP</strong><span>{{ log.ip_address or "-" }}</span></div>
+  </div>
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Antes</h2>
+    <pre class="json-box">{{ before_payload }}</pre>
+  </section>
+  <section class="panel">
+    <h2>Depois</h2>
+    <pre class="json-box">{{ after_payload }}</pre>
+  </section>
+</div>
+{% endblock %}

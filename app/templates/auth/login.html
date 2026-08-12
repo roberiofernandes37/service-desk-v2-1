@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Login - Service Desk V2.1{% endblock %}
+{% block content %}
+<section class="auth-shell">
+  <form method="post" class="panel narrow">
+    {{ form.hidden_tag() }}
+    <h1>Entrar</h1>
+    <label>{{ form.email.label }}{{ form.email(autocomplete="email") }}</label>
+    <label>{{ form.password.label }}{{ form.password(autocomplete="current-password") }}</label>
+    {{ form.submit(class="primary full") }}
+  </form>
+</section>
+{% endblock %}

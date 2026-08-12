@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Backup e restauracao</h1>
+    <p>Copias do banco, anexos e logs para recuperacao operacional.</p>
+  </div>
+  <div class="title-actions">
+    <form method="post" class="inline-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="create">
+      <button type="submit" class="primary">Gerar backup agora</button>
+    </form>
+  </div>
+</section>
+
+<div class="backup-layout">
+  <section class="panel compact-panel">
+    <h2>Configuracao</h2>
+    <form method="post" class="grid-form">
+      {{ settings_form.hidden_tag() }}
+      <input type="hidden" name="action" value="settings">
+      <label class="check">{{ settings_form.enabled() }} {{ settings_form.enabled.label.text }}</label>
+      <label>{{ settings_form.schedule_times.label }}{{ settings_form.schedule_times(placeholder="12:00,18:00") }}</label>
+      <label>{{ settings_form.max_backup_count.label }}{{ settings_form.max_backup_count() }}</label>
+      <label class="check">{{ settings_form.include_uploads() }} {{ settings_form.include_uploads.label.text }}</label>
+      <label class="check">{{ settings_form.include_logs() }} {{ settings_form.include_logs.label.text }}</label>
+      <div class="wide actions">{{ settings_form.submit(class="primary") }}</div>
+    </form>
+  </section>
+
+  <section class="panel compact-panel">
+    <h2>Como agendar</h2>
+    <p class="muted">O sistema guarda os horarios e retencao. Para evitar execucao duplicada no servidor web, agende o comando abaixo no Agendador de Tarefas do Windows.</p>
+    <pre class="json-box">docker compose exec web flask backup-create</pre>
+    <p class="muted">Para emergencia pelo terminal:</p>
+    <pre class="json-box">docker compose exec web flask backup-list
+docker compose exec web flask backup-restore --id ID --confirm RESTAURAR</pre>
+  </section>
+</div>
+
+<section class="notice">
+  Restaurar substitui os dados atuais pelo conteudo do backup. Antes de restaurar pela tela ou terminal, o sistema tenta criar um backup de seguranca automaticamente.
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Historico</h2>
+    <span class="muted">Mantendo ate {{ config.max_backup_count }} backup{{ "" if config.max_backup_count == 1 else "s" }}</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Acao</th>
+          <th>Status</th>
+          <th>Arquivo</th>
+          <th>Tamanho</th>
+          <th>Usuario</th>
+          <th>Mensagem</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in backups %}
+          <tr>
+            <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ "Backup" if item.action == "backup" else "Restauracao" }}</td>
+            <td><span class="badge {{ 'status-concluida' if item.status == 'success' else 'status-pausada' if item.status == 'running' else 'status-cancelada' }}">{{ backup_status_label(item.status) }}</span></td>
+            <td class="ticket-title">{{ item.file_name or "-" }}</td>
+            <td>{{ format_bytes(item.size_bytes) }}</td>
+            <td>{{ item.user.name if item.user else "-" }}</td>
+            <td class="ticket-title">{{ item.message or item.error_message or "-" }}</td>
+            <td>
+              <div class="row-actions">
+                {% if item.action == "backup" and item.status == "success" %}
+                  <form method="post" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="test">
+                    <input type="hidden" name="backup_id" value="{{ item.id }}">
+                    <button type="submit" class="small-button">Testar</button>
+                  </form>
+                  <a class="small-button" href="{{ url_for('admin.download_backup', backup_id=item.id) }}">Baixar</a>
+                  <form method="post" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="restore">
+                    <input type="hidden" name="backup_id" value="{{ item.id }}">
+                    <input name="confirmation" placeholder="RESTAURAR" class="restore-confirm">
+                    <button type="submit" class="small-button">Restaurar</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="empty">Nenhum backup registrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination.pages > 1 %}
+    <nav class="pagination">
+      {% if pagination.has_prev %}
+        <a class="button" href="{{ url_for('admin.backups', page=pagination.prev_num) }}">Anterior</a>
+      {% else %}
+        <span class="button disabled">Anterior</span>
+      {% endif %}
+      <span>{{ pagination.first }}-{{ pagination.last }} de {{ pagination.total }}</span>
+      {% if pagination.has_next %}
+        <a class="button" href="{{ url_for('admin.backups', page=pagination.next_num) }}">Proxima</a>
+      {% else %}
+        <span class="button disabled">Proxima</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

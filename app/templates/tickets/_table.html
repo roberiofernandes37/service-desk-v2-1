@@ -1,0 +1,47 @@
+<div class="table-wrap">
+  {% set rows = tickets if tickets is defined else recent %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th class="col-title">Titulo</th>
+        <th>Status</th>
+        <th>Prioridade</th>
+        <th>Solicitante</th>
+        <th>Responsavel</th>
+        <th class="col-fields">Campos da categoria</th>
+        <th>Prazo</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ticket in rows %}
+        {% set sla = sla_state(ticket) %}
+        <tr>
+          <td>#{{ ticket.id }}</td>
+          <td class="ticket-title">{{ ticket.title }}</td>
+          <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
+          <td>{{ ticket.priority }}</td>
+          <td>{{ ticket.requester.name }}</td>
+          <td>{{ ticket.assignee.name if ticket.assignee else "-" }}</td>
+          <td class="ticket-fields">
+            {% if ticket.custom_data %}
+              {% for label, value in ticket.custom_data.items() %}
+                <div><strong>{{ label }}:</strong> {{ value }}</div>
+              {% endfor %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            <span>{{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
+            <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
+          </td>
+          <td><a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">Abrir</a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9" class="empty">Nenhuma solicitacao encontrada.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

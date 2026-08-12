@@ -1,0 +1,11 @@
+{% set quick_endpoint = quick_filter_endpoint if quick_filter_endpoint is defined else request.endpoint %}
+<nav class="quick-filters" aria-label="Atalhos de filtro">
+  <a class="{% if not filters.q and not filters.status and not filters.priority and not filters.due_state and not filters.category_id and filters.branch_id is none and not filters.requester_id and filters.assignee_id is none %}active{% endif %}" href="{{ url_for(quick_endpoint) }}">Todas</a>
+  {% if current_user.has_permission('can_work_tickets') %}
+    <a class="{% if filters.assignee_id == current_user.id %}active{% endif %}" href="{{ url_for(quick_endpoint, assignee_id=current_user.id, sort='due') }}">Minha fila</a>
+  {% endif %}
+  <a class="{% if filters.requester_id == current_user.id %}active{% endif %}" href="{{ url_for(quick_endpoint, requester_id=current_user.id, sort='recent') }}">Minhas solicitacoes</a>
+  <a class="{% if filters.assignee_id == -1 %}active{% endif %}" href="{{ url_for(quick_endpoint, assignee_id=-1, sort='due') }}">Sem responsavel</a>
+  <a class="{% if filters.due_state == 'today' %}active{% endif %}" href="{{ url_for(quick_endpoint, due_state='today', sort='due') }}">Vencem hoje</a>
+  <a class="{% if filters.due_state == 'overdue' %}active{% endif %}" href="{{ url_for(quick_endpoint, due_state='overdue', sort='due') }}">Atrasadas</a>
+</nav>

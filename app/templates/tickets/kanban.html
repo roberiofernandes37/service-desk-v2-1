@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Kanban</h1>
+    <p>Fila visual por status, ordenada por prazo SLA.</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('tickets.list_tickets', q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Tabela</a>
+    <a class="button" href="{{ url_for('tickets.export_csv', q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Exportar CSV</a>
+    <a class="primary button" href="{{ url_for('tickets.create_ticket') }}">Nova</a>
+  </div>
+</section>
+
+<section class="kanban-filterbar">
+  {% set quick_filter_endpoint = 'tickets.kanban' %}
+  {% include "tickets/_quick_filters.html" %}
+
+  <form method="get" class="filters advanced kanban-filters">
+    <input name="q" value="{{ filters.q }}" placeholder="Buscar por titulo ou descricao">
+    <select name="status">
+      <option value="">Todos os status</option>
+      {% for option in statuses %}
+        <option value="{{ option }}" {% if filters.status == option %}selected{% endif %}>{{ option }}</option>
+      {% endfor %}
+    </select>
+    <select name="priority">
+      <option value="">Todas prioridades</option>
+      {% for option in priorities %}
+        <option value="{{ option }}" {% if filters.priority == option %}selected{% endif %}>{{ option }}</option>
+      {% endfor %}
+    </select>
+    <select name="due_state">
+      {% for value, label in due_states %}
+        <option value="{{ value }}" {% if filters.due_state == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="sort">
+      {% for value, label in sort_options %}
+        <option value="{{ value }}" {% if filters.sort == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="category_id">
+      <option value="">Todas categorias</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}" {% if filters.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="branch_id">
+      <option value="">Todas filiais</option>
+      <option value="-1" {% if filters.branch_id == -1 %}selected{% endif %}>Geral</option>
+      {% for branch in branches %}
+        <option value="{{ branch.id }}" {% if filters.branch_id == branch.id %}selected{% endif %}>{{ branch.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="requester_id">
+      <option value="">Todos solicitantes</option>
+      {% for requester in requesters %}
+        <option value="{{ requester.id }}" {% if filters.requester_id == requester.id %}selected{% endif %}>{{ requester.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="assignee_id">
+      <option value="">Todos responsaveis</option>
+      <option value="-1" {% if filters.assignee_id == -1 %}selected{% endif %}>Sem responsavel</option>
+      {% for assignee in assignees %}
+        <option value="{{ assignee.id }}" {% if filters.assignee_id == assignee.id %}selected{% endif %}>{{ assignee.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="primary">Filtrar</button>
+  </form>
+</section>
+
+<section class="kanban">
+  {% for status_name, tickets in columns.items() %}
+    <div class="kanban-column">
+      <header>
+        <strong>{{ status_name }}</strong>
+        <span>{{ tickets|length }}</span>
+      </header>
+      <div class="kanban-cards">
+        {% for ticket in tickets %}
+          {% set sla = sla_state(ticket) %}
+          <article class="ticket-card">
+            <div class="card-row">
+              <span class="ticket-id">#{{ ticket.id }}</span>
+              <span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span>
+            </div>
+            <h2>{{ ticket.title }}</h2>
+            <p>{{ ticket.category.name if ticket.category else "Sem categoria" }} - {{ ticket.priority }}</p>
+            {% if ticket.custom_data %}
+              <div class="kanban-fields">
+                {% for label, value in ticket.custom_data.items() %}
+                  <span><strong>{{ label }}:</strong> {{ value }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+            <p>{{ ticket.requester.name }}{% if ticket.assignee %} -> {{ ticket.assignee.name }}{% endif %}</p>
+            <div class="card-row">
+              <span>Prazo {{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
+              <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
+              <a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">Abrir</a>
+            </div>
+          </article>
+        {% else %}
+          <p class="empty small-empty">Sem itens.</p>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

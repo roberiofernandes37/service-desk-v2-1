@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Usuarios e perfis</h1>
+    <p>Controle de acesso centralizado.</p>
+  </div>
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Novo usuario</h2>
+    <form method="post" class="stack">
+      {{ form.hidden_tag() }}
+      <label>{{ form.name.label }}{{ form.name() }}</label>
+      <label>{{ form.email.label }}{{ form.email() }}</label>
+      <label>{{ form.password.label }}{{ form.password() }}</label>
+      <label>{{ form.profile_id.label }}{{ form.profile_id() }}</label>
+      <label class="check">{{ form.active() }} {{ form.active.label.text }}</label>
+      {{ form.submit(class="primary") }}
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Perfis existentes</h2>
+    <form method="post" action="{{ url_for('admin.profiles') }}" class="stack compact">
+      {{ profile_form.hidden_tag() }}
+      <label>{{ profile_form.name.label }}{{ profile_form.name() }}</label>
+      <label class="check">{{ profile_form.can_manage_users() }} {{ profile_form.can_manage_users.label.text }}</label>
+      <label class="check">{{ profile_form.can_manage_settings() }} {{ profile_form.can_manage_settings.label.text }}</label>
+      <label class="check">{{ profile_form.can_work_tickets() }} {{ profile_form.can_work_tickets.label.text }}</label>
+      <label class="check">{{ profile_form.can_view_reports() }} {{ profile_form.can_view_reports.label.text }}</label>
+      <label class="check">{{ profile_form.can_reset_data() }} {{ profile_form.can_reset_data.label.text }}</label>
+      {{ profile_form.submit(class="primary") }}
+    </form>
+    <hr>
+    <ul class="plain-list profile-list">
+      {% for profile in profiles %}
+        <li>
+          <div>
+            <strong>{{ profile.name }}</strong>
+            <span>
+              {% if profile.can_manage_users %}Usuarios{% endif %}
+              {% if profile.can_manage_settings %} Parametros{% endif %}
+              {% if profile.can_work_tickets %} Solicitacoes{% endif %}
+              {% if profile.can_view_reports %} Relatorios{% endif %}
+              {% if profile.can_reset_data %} Criticas{% endif %}
+            </span>
+          </div>
+          <a class="small-button" href="{{ url_for('admin.edit_profile', profile_id=profile.id) }}">Editar</a>
+        </li>
+      {% else %}
+        <li>Nenhum perfil cadastrado.</li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Usuarios</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th>Acoes</th></tr></thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.profile.name }}</td>
+            <td>{{ "Sim" if user.active else "Nao" }}</td>
+            <td>
+              <div class="row-actions">
+                <a class="small-button" href="{{ url_for('admin.edit_user', user_id=user.id) }}">Editar</a>
+                <a class="small-button" href="{{ url_for('admin.reset_user_password', user_id=user.id) }}">Senha</a>
+                {% if user.id != current_user.id %}
+                  <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="small-button">{{ "Desativar" if user.active else "Ativar" }}</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" class="empty">Nenhum usuario.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

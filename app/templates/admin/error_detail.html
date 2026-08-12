@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Detalhe do erro</h1>
+    <p>{{ log.error_type }} - {{ log.path or "-" }}</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.error_logs') }}">Voltar</a>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="audit-meta">
+    <div><strong>Data</strong><span>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</span></div>
+    <div><strong>Status</strong><span>{{ "Resolvido" if log.resolved else "Pendente" }}</span></div>
+    <div><strong>Usuario</strong><span>{{ log.user_name or (log.user.name if log.user else "-") }}</span></div>
+    <div><strong>Tipo</strong><span>{{ log.error_type }}</span></div>
+    <div><strong>Metodo</strong><span>{{ log.method or "-" }}</span></div>
+    <div><strong>Status HTTP</strong><span>{{ log.status_code or "-" }}</span></div>
+    <div><strong>Endpoint</strong><span>{{ log.endpoint or "-" }}</span></div>
+    <div><strong>Rota</strong><span>{{ log.path or "-" }}</span></div>
+    <div><strong>IP</strong><span>{{ log.ip_address or "-" }}</span></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Mensagem</h2>
+  <p class="preline">{{ log.error_message }}</p>
+</section>
+
+<div class="two-col">
+  <section class="panel">
+    <h2>Payload enviado</h2>
+    <pre class="json-box">{{ payload }}</pre>
+  </section>
+  <section class="panel">
+    <h2>Ambiente</h2>
+    <dl class="detail-summary">
+      <div>
+        <dt>Navegador</dt>
+        <dd>{{ log.user_agent or "-" }}</dd>
+      </div>
+      <div>
+        <dt>Usuario ID</dt>
+        <dd>{{ log.user_id or "-" }}</dd>
+      </div>
+    </dl>
+  </section>
+</div>
+
+<section class="panel">
+  <h2>Rastreamento tecnico</h2>
+  <pre class="json-box">{{ traceback_payload }}</pre>
+</section>
+
+<section class="panel narrow">
+  <h2>Tratativa</h2>
+  <form method="post" class="stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Status
+      <select name="resolved">
+        <option value="no" {% if not log.resolved %}selected{% endif %}>Pendente</option>
+        <option value="yes" {% if log.resolved %}selected{% endif %}>Resolvido</option>
+      </select>
+    </label>
+    <label>Observacao tecnica
+      <textarea name="technical_note" rows="4" placeholder="Causa encontrada, correcao feita ou proximo passo">{{ log.technical_note or "" }}</textarea>
+    </label>
+    <button type="submit" class="primary">Salvar diagnostico</button>
+  </form>
+</section>
+{% endblock %}

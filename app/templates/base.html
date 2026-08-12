@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Service Desk V2.1{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="{% if current_user.is_authenticated %}has-sidebar{% endif %}">
+  {% if current_user.is_authenticated %}
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <a class="brand" href="{{ url_for('main.dashboard') }}"><span>Service Desk</span><strong>V2.1</strong></a>
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Recolher menu" title="Recolher menu">
+          <span aria-hidden="true">&lsaquo;</span>
+        </button>
+      </div>
+      <nav>
+        <a class="{% if request.endpoint == 'main.dashboard' %}active{% endif %}" href="{{ url_for('main.dashboard') }}" title="Painel"><span class="nav-mark">P</span><span class="nav-text">Painel</span></a>
+        <a class="{% if request.endpoint in ['tickets.list_tickets', 'tickets.detail', 'tickets.edit'] %}active{% endif %}" href="{{ url_for('tickets.list_tickets') }}" title="Solicitacoes"><span class="nav-mark">S</span><span class="nav-text">Solicitacoes</span></a>
+        <a class="{% if request.endpoint == 'tickets.kanban' %}active{% endif %}" href="{{ url_for('tickets.kanban') }}" title="Kanban"><span class="nav-mark">K</span><span class="nav-text">Kanban</span></a>
+        <a class="{% if request.endpoint == 'tickets.create_ticket' %}active{% endif %}" href="{{ url_for('tickets.create_ticket') }}" title="Nova"><span class="nav-mark">N</span><span class="nav-text">Nova</span></a>
+        {% if current_user.has_permission('can_manage_settings') %}
+          <a class="{% if request.endpoint in ['admin.settings', 'admin.edit_category', 'admin.toggle_category', 'admin.update_category_fields', 'admin.edit_branch', 'admin.toggle_branch'] %}active{% endif %}" href="{{ url_for('admin.settings') }}" title="Parametros"><span class="nav-mark">Pa</span><span class="nav-text">Parametros</span></a>
+        {% endif %}
+        {% if current_user.has_permission('can_manage_users') %}
+          <a class="{% if request.endpoint in ['admin.users', 'admin.profiles', 'admin.edit_user', 'admin.edit_profile', 'admin.reset_user_password', 'admin.toggle_user'] %}active{% endif %}" href="{{ url_for('admin.users') }}" title="Usuarios"><span class="nav-mark">U</span><span class="nav-text">Usuarios</span></a>
+        {% endif %}
+        {% if current_user.has_permission('can_view_reports') %}
+          <a class="{% if request.endpoint == 'admin.reports' %}active{% endif %}" href="{{ url_for('admin.reports') }}" title="Relatorios"><span class="nav-mark">R</span><span class="nav-text">Relatorios</span></a>
+          <a class="{% if request.endpoint in ['admin.audit_logs', 'admin.audit_detail'] %}active{% endif %}" href="{{ url_for('admin.audit_logs') }}" title="Auditoria"><span class="nav-mark">A</span><span class="nav-text">Auditoria</span></a>
+          <a class="{% if request.endpoint in ['admin.error_logs', 'admin.error_detail'] %}active{% endif %}" href="{{ url_for('admin.error_logs') }}" title="Erros"><span class="nav-mark">E</span><span class="nav-text">Erros</span></a>
+        {% endif %}
+        {% if current_user.has_permission('can_reset_data') %}
+          <a class="{% if request.endpoint in ['admin.backups', 'admin.download_backup'] %}active{% endif %}" href="{{ url_for('admin.backups') }}" title="Backup"><span class="nav-mark">B</span><span class="nav-text">Backup</span></a>
+        {% endif %}
+        <a class="notification-link {% if request.endpoint == 'main.notifications' %}active{% endif %}" href="{{ url_for('main.notifications') }}" title="Avisos">
+          <span class="nav-mark">Av</span>
+          <span class="nav-text">Avisos</span>
+          {% if unread_notification_count %}
+            <span>{{ unread_notification_count }}</span>
+          {% endif %}
+        </a>
+        <a class="{% if request.endpoint == 'auth.profile' %}active{% endif %}" href="{{ url_for('auth.profile') }}" title="Perfil"><span class="nav-mark">Pe</span><span class="nav-text">Perfil</span></a>
+        <form action="{{ url_for('auth.logout') }}" method="post" class="inline-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="link-button" title="Sair"><span class="nav-mark">Sa</span><span class="nav-text">Sair</span></button>
+        </form>
+      </nav>
+      <div class="sidebar-user">
+        <span class="user-avatar">{{ current_user.name[:1]|upper }}</span>
+        <div>
+          <strong>{{ current_user.name }}</strong>
+          <span>{{ current_user.profile.name if current_user.profile else "Usuario" }}</span>
+        </div>
+      </div>
+    </aside>
+  {% else %}
+    <header class="topbar">
+      <a class="brand" href="{{ url_for('main.dashboard') }}">Service Desk V2.1</a>
+    </header>
+  {% endif %}
+
+  <main class="page">
+    {% if current_user.is_authenticated %}
+      <section class="workspace-bar">
+        <a class="back-button" href="{{ url_for('main.dashboard') }}" onclick="if (window.history.length > 1) { window.history.back(); return false; }">
+          <span aria-hidden="true">&larr;</span>
+          Voltar
+        </a>
+        <div class="user-pill">
+          <span class="user-avatar">{{ current_user.name[:1]|upper }}</span>
+          <div>
+            <strong>{{ current_user.name }}</strong>
+            <span>{{ current_user.profile.name if current_user.profile else "Usuario" }}</span>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="alerts">
+          {% for category, message in messages %}
+            <div class="alert {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% if current_user.is_authenticated and unread_notifications %}
+      <section class="notification-strip">
+        <div>
+          <strong>Avisos recentes</strong>
+          <a href="{{ url_for('main.notifications') }}">Ver todos</a>
+        </div>
+        <ul>
+          {% for notification in unread_notifications[:3] %}
+            <li>
+              <form method="post" action="{{ url_for('main.read_notification', notification_id=notification.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">
+                  <strong>{{ notification.title }}</strong>
+                  <span>{{ notification.message }}</span>
+                </button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  {% if current_user.is_authenticated %}
+    <script>
+      (function () {
+        const body = document.body;
+        const toggle = document.querySelector("[data-sidebar-toggle]");
+        const key = "serviceDeskSidebarCollapsed";
+        if (!toggle) return;
+        if (localStorage.getItem(key) === "true") {
+          body.classList.add("sidebar-collapsed");
+          toggle.setAttribute("aria-label", "Expandir menu");
+          toggle.setAttribute("title", "Expandir menu");
+        }
+        toggle.addEventListener("click", function () {
+          const collapsed = body.classList.toggle("sidebar-collapsed");
+          localStorage.setItem(key, collapsed ? "true" : "false");
+          toggle.setAttribute("aria-label", collapsed ? "Expandir menu" : "Recolher menu");
+          toggle.setAttribute("title", collapsed ? "Expandir menu" : "Recolher menu");
+        });
+      })();
+    </script>
+  {% endif %}
+</body>
+</html>

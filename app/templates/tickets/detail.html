@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title detail-title">
+  <div>
+    <h1>#{{ ticket.id }} - {{ ticket.title }}</h1>
+    <p>{{ ticket.status }} - {{ ticket.priority }} - prazo {{ ticket.due_at.strftime('%d/%m/%Y') }}</p>
+  </div>
+  {% if ticket.status == "Aberta" and (ticket.requester_id == current_user.id or current_user.has_permission('can_manage_settings')) %}
+    <div class="title-actions">
+      <a class="button" href="{{ url_for('tickets.edit', ticket_id=ticket.id) }}">Editar</a>
+    </div>
+  {% endif %}
+</section>
+
+<div class="detail-layout">
+  <main class="detail-main">
+    <section class="panel detail-summary-panel">
+    {% set sla = sla_state(ticket) %}
+    <h2>Resumo operacional</h2>
+    <dl class="detail-summary">
+      <div>
+        <dt>Status</dt>
+        <dd><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></dd>
+      </div>
+      <div>
+        <dt>SLA</dt>
+        <dd><span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span></dd>
+      </div>
+      <div>
+        <dt>Solicitante</dt>
+        <dd>{{ ticket.requester.name if ticket.requester else "-" }}</dd>
+      </div>
+      <div>
+        <dt>Responsavel</dt>
+        <dd>{{ ticket.assignee.name if ticket.assignee else "-" }}</dd>
+      </div>
+      <div>
+        <dt>Categoria</dt>
+        <dd>{{ ticket.category.name if ticket.category else "-" }}</dd>
+      </div>
+      <div>
+        <dt>Filial</dt>
+        <dd>{{ ticket.branch.name if ticket.branch else "Geral" }}</dd>
+      </div>
+      <div>
+        <dt>Criada em</dt>
+        <dd>{{ ticket.created_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+      </div>
+      <div>
+        <dt>Atualizada em</dt>
+        <dd>{{ ticket.updated_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+      </div>
+      <div>
+        <dt>Prazo</dt>
+        <dd>{{ ticket.due_at.strftime('%d/%m/%Y') }}</dd>
+      </div>
+      <div>
+        <dt>Tempo pausado</dt>
+        <dd>{{ format_duration(ticket.total_paused_seconds) }}</dd>
+      </div>
+    </dl>
+    <hr>
+    <h2>Escopo</h2>
+    <p class="preline">{{ ticket.description }}</p>
+    {% if ticket.custom_data %}
+      <div class="custom-data">
+        <h2>Dados da categoria</h2>
+        <dl>
+          {% for key, value in ticket.custom_data.items() %}
+            <div>
+              <dt>{{ key }}</dt>
+              <dd>{{ value }}</dd>
+            </div>
+          {% endfor %}
+        </dl>
+      </div>
+    {% endif %}
+    <div class="file-row">
+      {% if ticket.initial_file %}
+        <a class="small-button" href="{{ url_for('tickets.download', ticket_id=ticket.id, kind='inicial') }}">Baixar anexo inicial</a>
+      {% endif %}
+      {% if ticket.final_file %}
+        <a class="small-button" href="{{ url_for('tickets.download', ticket_id=ticket.id, kind='final') }}">Baixar entrega</a>
+      {% endif %}
+    </div>
+    </section>
+
+    <section class="panel comments-panel">
+      <h2>Comentarios</h2>
+      <form method="post" action="{{ url_for('tickets.comment', ticket_id=ticket.id) }}" class="comment-form">
+        {{ comment_form.hidden_tag() }}
+        {{ comment_form.body(placeholder="Escreva uma mensagem") }}
+        {{ comment_form.submit() }}
+      </form>
+      <div class="comments">
+        {% for comment in ticket.comments %}
+          <article>
+            <strong>{{ comment.user.name }}</strong>
+            <span>{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+            <p>{{ comment.body }}</p>
+          </article>
+        {% else %}
+          <p class="muted">Nenhum comentario ainda.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <aside class="detail-side">
+    <section class="panel action-panel">
+      <h2>Acoes</h2>
+      {% set actions = [] %}
+      {% if ticket.status == "Aberta" %}
+        {% set actions = [("assumir", "Assumir"), ("cancelar", "Cancelar")] %}
+      {% elif ticket.status == "Em Andamento" %}
+        {% set actions = [("pausar", "Pausar"), ("concluir", "Concluir"), ("cancelar", "Cancelar")] %}
+      {% elif ticket.status == "Pausada" %}
+        {% set actions = [("retomar", "Retomar"), ("cancelar", "Cancelar")] %}
+      {% elif ticket.status == "Concluida" %}
+        {% set actions = [("reabrir", "Reabrir")] %}
+      {% endif %}
+
+      {% for code, label in actions %}
+        <form method="post" action="{{ url_for('tickets.action', ticket_id=ticket.id) }}" enctype="multipart/form-data" class="action-box">
+          {{ action_form.csrf_token }}
+          <input type="hidden" name="action" value="{{ code }}">
+          {% if code in ["pausar", "cancelar", "concluir"] %}
+            <textarea name="note" rows="3" placeholder="Observacao obrigatoria para a acao"></textarea>
+          {% endif %}
+          {% if code == "concluir" %}
+            <input type="file" name="final_file">
+          {% endif %}
+          <button type="submit" class="action-{{ code }}">{{ label }}</button>
+        </form>
+      {% else %}
+        <p class="muted">Nenhuma acao disponivel para este status.</p>
+      {% endfor %}
+
+      {% if can_transfer and transfer_form.assignee_id.choices %}
+        <hr>
+        <h2>Transferir responsavel</h2>
+        <form method="post" action="{{ url_for('tickets.transfer', ticket_id=ticket.id) }}" class="stack compact">
+          {{ transfer_form.hidden_tag() }}
+          <label>{{ transfer_form.assignee_id.label }}{{ transfer_form.assignee_id() }}</label>
+          <label>{{ transfer_form.note.label }}{{ transfer_form.note(rows=3, placeholder="Opcional") }}</label>
+          {{ transfer_form.submit(class="primary") }}
+        </form>
+      {% endif %}
+    </section>
+
+    <section class="panel timeline-panel">
+      <h2>Historico</h2>
+      <ol class="history">
+        {% for item in ticket.history %}
+          <li>
+            <strong>{{ item.action }}</strong>
+            <span>{{ item.user.name }} - {{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+            {% if item.note %}<p>{{ item.note }}</p>{% endif %}
+          </li>
+        {% else %}
+          <li>Nenhum historico.</li>
+        {% endfor %}
+      </ol>
+    </section>
+  </aside>
+</div>
+{% endblock %}

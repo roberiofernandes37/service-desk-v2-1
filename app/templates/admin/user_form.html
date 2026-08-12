@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Editar usuario</h1>
+    <p>{{ user.email }}</p>
+  </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.users') }}">Voltar</a>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <form method="post" class="stack">
+    {{ form.hidden_tag() }}
+    <label>{{ form.name.label }}{{ form.name() }}</label>
+    <label>{{ form.email.label }}{{ form.email() }}</label>
+    <label>{{ form.profile_id.label }}{{ form.profile_id() }}</label>
+    <label class="check">{{ form.active() }} {{ form.active.label.text }}</label>
+    {{ form.submit(class="primary") }}
+  </form>
+</section>
+{% endblock %}
