@@ -2,27 +2,35 @@
 {% block content %}
 <section class="panel">
   <h1>{{ title }}</h1>
+  {% if form.errors %}
+    <div class="alert alert-danger" role="alert">
+      <strong>Não foi possível salvar a demanda.</strong>
+      <ul class="mb-0 mt-2">
+        {% for field in form if field.errors %}
+          {% for error in field.errors %}
+            <li>{{ field.label.text }}: {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
   <form method="post" enctype="multipart/form-data" class="grid-form">
     {{ form.hidden_tag() }}
-    {% if editing %}
-      <div class="wide notice">
-        Categoria preservada: <strong>{{ ticket.category.name }}</strong>. O anexo inicial tambem nao e alterado nesta etapa.
-      </div>
-    {% endif %}
     <label class="wide">{{ form.title.label }}{{ form.title() }}</label>
     <label class="wide">{{ form.description.label }}{{ form.description(rows=5) }}</label>
     <label>{{ form.priority.label }}{{ form.priority() }}</label>
-    {% if not editing %}
-      <label>{{ form.category_id.label }}{{ form.category_id() }}</label>
-    {% endif %}
+    <label>{{ form.category_id.label }}{{ form.category_id() }}</label>
     <label>{{ form.branch_id.label }}{{ form.branch_id() }}</label>
     <label>{{ form.due_at.label }}{{ form.due_at() }}</label>
     <div id="dynamic-fields" class="wide dynamic-fields" hidden>
       <h2>Dados da categoria</h2>
       <div id="dynamic-field-list" class="grid-form embedded"></div>
     </div>
-    {% if not editing %}
-      <label class="wide">{{ form.initial_file.label }}{{ form.initial_file() }}</label>
+    <label class="wide">{{ form.initial_files.label }}{{ form.initial_files(multiple=True) }}<small class="muted">Você pode selecionar vários arquivos. Limite total: 50 MB.</small></label>
+    {% if editing and ticket.active_attachments %}
+      <div class="wide notice">
+        A demanda já possui {{ ticket.active_attachments|length }} anexo(s). Os arquivos selecionados serão adicionados aos anexos existentes.
+      </div>
     {% endif %}
     <div class="wide actions">
       <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ form.submit.label.text }}</button>

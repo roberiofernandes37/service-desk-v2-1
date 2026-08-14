@@ -33,6 +33,12 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
 
     profile = db.relationship("AccessProfile", backref="users")
+    notification_preferences = db.relationship(
+        "UserNotificationPreference",
+        backref="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     @property
     def is_active(self):
@@ -40,6 +46,16 @@ class User(UserMixin, db.Model):
 
     def has_permission(self, permission_name):
         return bool(self.profile and getattr(self.profile, permission_name, False))
+
+
+class UserNotificationPreference(db.Model):
+    __tablename__ = "user_notification_preferences"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False, index=True)
+    email_enabled = db.Column(db.Boolean, default=False, nullable=False)
+    email_events = db.Column(db.JSON, nullable=False, default=list)
+    updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
 
 class Branch(db.Model):
@@ -93,6 +109,8 @@ class Ticket(db.Model):
     pause_started_at = db.Column(db.DateTime(timezone=True), nullable=True)
     total_paused_seconds = db.Column(db.Integer, default=0, nullable=False)
     resolution_note = db.Column(db.Text, nullable=True)
+    completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    resolved_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     initial_file = db.Column(db.String(300), nullable=True)
     final_file = db.Column(db.String(300), nullable=True)
     custom_data = db.Column(db.JSON, nullable=True)
@@ -103,6 +121,7 @@ class Ticket(db.Model):
     branch = db.relationship("Branch")
     requester = db.relationship("User", foreign_keys=[requester_id])
     assignee = db.relationship("User", foreign_keys=[assignee_id])
+    resolved_by = db.relationship("User", foreign_keys=[resolved_by_id])
     history = db.relationship(
         "TicketHistory",
         backref="ticket",
@@ -115,6 +134,33 @@ class Ticket(db.Model):
         cascade="all, delete-orphan",
         order_by="TicketComment.created_at",
     )
+    attachments = db.relationship(
+        "TicketAttachment",
+        backref="ticket",
+        cascade="all, delete-orphan",
+        order_by="TicketAttachment.created_at",
+    )
+
+    @property
+    def active_attachments(self):
+        return [attachment for attachment in self.attachments if attachment.deleted_at is None]
+
+
+class TicketAttachment(db.Model):
+    __tablename__ = "ticket_attachments"
+
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(db.Integer, db.ForeignKey("tickets.id"), nullable=False, index=True)
+    stored_path = db.Column(db.String(300), nullable=False)
+    original_name = db.Column(db.String(255), nullable=False)
+    kind = db.Column(db.String(20), nullable=False, default="initial")
+    uploaded_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
+    deleted_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    deleted_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+
+    uploaded_by = db.relationship("User", foreign_keys=[uploaded_by_id])
+    deleted_by = db.relationship("User", foreign_keys=[deleted_by_id])
 
 
 class TicketHistory(db.Model):

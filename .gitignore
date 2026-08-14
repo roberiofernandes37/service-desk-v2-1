@@ -1,8 +1,10 @@
 .env
 instance/
+instance/mail_config.json
 uploads/
 backups/
 __pycache__/
+.venv/
 *.pyc
 *.pyo
 *.sqlite3

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-title">
+  <div>
+    <h1>Configuração de e-mail</h1>
+    <p>Configure o SMTP usado para avisos opcionais dos usuários.</p>
+  </div>
+</section>
+
+<section class="panel narrow">
+  <div class="notice">
+    A senha não é exibida novamente. Deixe o campo em branco para manter a senha já configurada.
+  </div>
+  <form method="post" class="grid-form">
+    {{ form.hidden_tag() }}
+    <label>{{ form.server.label }}{{ form.server() }}</label>
+    <label>{{ form.port.label }}{{ form.port() }}</label>
+    <label>{{ form.username.label }}{{ form.username() }}</label>
+    <label>{{ form.password.label }}{{ form.password(autocomplete="new-password") }}</label>
+    <label>{{ form.sender.label }}{{ form.sender() }}</label>
+    <label>{{ form.test_recipient.label }}{{ form.test_recipient() }}</label>
+    <label class="check">{{ form.use_tls() }} {{ form.use_tls.label.text }}</label>
+    <label class="check">{{ form.use_ssl() }} {{ form.use_ssl.label.text }}</label>
+    <div class="wide actions">
+      <button type="submit" name="save" value="1" class="btn btn-light fw-bold"><i class="fa-solid fa-save me-2"></i>{{ form.save.label.text }}</button>
+      <button type="submit" name="test" value="1" class="btn btn-primary fw-bold"><i class="fa-solid fa-paper-plane me-2"></i>{{ form.test.label.text }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

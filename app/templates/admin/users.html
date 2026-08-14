@@ -64,9 +64,9 @@
       <tbody>
         {% for user in users %}
           <tr>
-            <td class="px-4">{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.profile.name }}</td>
+            <td class="px-4 wrap-text">{{ user.name }}</td>
+            <td class="wrap-text">{{ user.email }}</td>
+            <td class="wrap-text">{{ user.profile.name }}</td>
             <td>{{ "Sim" if user.active else "Nao" }}</td>
             <td class="px-4">
               <div class="row-actions">

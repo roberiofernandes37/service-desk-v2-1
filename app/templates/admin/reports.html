@@ -90,7 +90,14 @@
           {% set sla = sla_state(ticket) %}
           <tr>
             <td class="px-4 fw-bold text-muted">#{{ ticket.id }}</td>
-            <td>{{ ticket.title }}</td>
+            <td class="ticket-title">
+              <span class="ticket-title-text">
+                {{ ticket.title }}
+                {% if ticket.active_attachments %}
+                  <i class="fa-solid fa-paperclip attachment-indicator" title="Esta demanda possui anexo" aria-label="Esta demanda possui anexo"></i>
+                {% endif %}
+              </span>
+            </td>
             <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
             <td>{{ ticket.priority }}</td>
             <td>{{ ticket.requester.name if ticket.requester else "-" }}</td>

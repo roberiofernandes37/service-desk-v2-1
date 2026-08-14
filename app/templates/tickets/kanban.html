@@ -72,21 +72,44 @@
 
 <section class="kanban">
   {% for status_name, tickets in columns.items() %}
-    <div class="kanban-column">
+    {% set status_key = status_name|lower|replace(' ', '-') %}
+    {% if status_name == 'Aberta' %}
+      {% set column_title = 'Abertas' %}
+      {% set column_icon = 'fa-inbox' %}
+      {% set action_label = 'Abrir' %}
+    {% elif status_name == 'Em Andamento' %}
+      {% set column_title = 'Em Andamento' %}
+      {% set column_icon = 'fa-spinner' %}
+      {% set action_label = 'Trabalhar' %}
+    {% elif status_name == 'Pausada' %}
+      {% set column_title = 'Pausadas' %}
+      {% set column_icon = 'fa-pause' %}
+      {% set action_label = 'Ver Trava' %}
+    {% elif status_name == 'Concluida' %}
+      {% set column_title = 'Concluídas' %}
+      {% set column_icon = 'fa-check-double' %}
+      {% set action_label = 'Revisar' %}
+    {% else %}
+      {% set column_title = 'Canceladas' %}
+      {% set column_icon = 'fa-ban' %}
+      {% set action_label = 'Consultar' %}
+    {% endif %}
+    <div class="kanban-column kanban-{{ status_key }}{% if status_name == 'Concluida' %} kanban-completed{% endif %}">
       <header>
-        <strong>{{ status_name }}</strong>
-        <span>{{ tickets|length }}</span>
+        <strong><i class="fa-solid {{ column_icon }}" aria-hidden="true"></i>{{ column_title }}</strong>
+        <span class="kanban-count">{{ tickets|length }}</span>
+        {% if status_name == 'Concluida' %}<small>Últimos 7 dias</small>{% endif %}
       </header>
       <div class="kanban-cards">
         {% for ticket in tickets %}
           {% set sla = sla_state(ticket) %}
-          <article class="ticket-card">
+          <article class="ticket-card{% if status_name == 'Concluida' %} ticket-card-completed{% endif %}">
             <div class="card-row">
               <span class="ticket-id">#{{ ticket.id }}</span>
-              <span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span>
+              <span class="priority-badge priority-{{ ticket.priority|lower }}">{{ ticket.priority }}</span>
             </div>
-            <h2>{{ ticket.title }}</h2>
-            <p>{{ ticket.category.name if ticket.category else "Sem categoria" }} - {{ ticket.priority }}</p>
+            <h2>{{ ticket.title }}{% if ticket.active_attachments %}<i class="fa-solid fa-paperclip attachment-indicator" title="Possui anexo" aria-label="Possui anexo"></i>{% endif %}</h2>
+            <span class="category-chip">{{ ticket.category.name if ticket.category else "Sem categoria" }}</span>
             {% if ticket.custom_data %}
               <div class="kanban-fields">
                 {% for label, value in ticket.custom_data.items() %}
@@ -94,11 +117,22 @@
                 {% endfor %}
               </div>
             {% endif %}
-            <p>{{ ticket.requester.name }}{% if ticket.assignee %} -> {{ ticket.assignee.name }}{% endif %}</p>
-            <div class="card-row">
-              <span>Prazo {{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
-              <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
-              <a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">Abrir</a>
+            <div class="kanban-people">
+              <span><i class="fa-solid fa-user" aria-hidden="true"></i>{{ ticket.requester.name.split()[0] }}</span>
+              <span><i class="fa-solid fa-headset" aria-hidden="true"></i>{{ ticket.assignee.name.split()[0] if ticket.assignee else 'Pendente' }}</span>
+            </div>
+            <div class="kanban-sla">
+              {% if status_name == 'Pausada' %}
+                <strong class="sla-frozen"><i class="fa-solid fa-lock" aria-hidden="true"></i>SLA Congelado</strong>
+              {% elif status_name == 'Concluida' %}
+                <span class="completed-mark"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Resolvida</span>
+              {% else %}
+                <span class="kanban-due"><i class="fa-solid fa-clock" aria-hidden="true"></i>SLA: {{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
+                <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
+              {% endif %}
+            </div>
+            <div class="kanban-card-action">
+              <a class="small-button" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}">{{ action_label }}</a>
             </div>
           </article>
         {% else %}

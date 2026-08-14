@@ -5,19 +5,19 @@ from datetime import datetime, time, timedelta, timezone
 
 from flask import Blueprint, abort, flash, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import Text, case, or_
+from sqlalchemy import Text, case, func, or_
 from werkzeug.exceptions import BadRequest
 
 from ..extensions import db
-from ..forms import CommentForm, TicketActionForm, TicketEditForm, TicketForm, TicketTransferForm
-from ..models import AccessProfile, Branch, Category, Ticket, TicketComment, TicketHistory, User
-from ..security import assert_ticket_action_allowed, assert_ticket_visible
+from ..forms import CommentForm, TicketActionForm, TicketForm, TicketTransferForm
+from ..models import AccessProfile, Branch, Category, Ticket, TicketAttachment, TicketComment, TicketHistory, User, utc_now
+from ..security import assert_ticket_action_allowed, assert_ticket_visible, can_cancel_ticket
 from ..services.audit import audit
 from ..services.error_logging import log_exception
-from ..services.notifications import notify_many
+from ..services.notifications import notify_many, send_event_emails
 from ..services.sla import format_duration, sla_state
-from ..services.ticket_workflow import apply_action
-from ..services.uploads import save_upload, send_protected_upload
+from ..services.ticket_workflow import active_seconds, apply_action
+from ..services.uploads import save_uploads, send_protected_upload
 
 bp = Blueprint("tickets", __name__)
 
@@ -44,12 +44,13 @@ def load_ticket_or_404(ticket_id):
     return ticket
 
 
-def configure_ticket_form(form):
-    form.category_id.choices = [(c.id, c.name) for c in Category.query.filter_by(active=True).order_by(Category.name)]
-    form.branch_id.choices = [(0, "Geral")] + [(b.id, b.name) for b in Branch.query.filter_by(active=True).order_by(Branch.name)]
-
-
-def configure_ticket_edit_form(form):
+def configure_ticket_form(form, include_category_id=None):
+    categories = [
+        category
+        for category in Category.query.order_by(Category.name).all()
+        if category.active or category.id == include_category_id
+    ]
+    form.category_id.choices = [(category.id, category.name) for category in categories]
     form.branch_id.choices = [(0, "Geral")] + [(b.id, b.name) for b in Branch.query.filter_by(active=True).order_by(Branch.name)]
 
 
@@ -68,16 +69,46 @@ def can_edit_ticket(user, ticket):
 
 
 def can_transfer_ticket(user, ticket):
-    return ticket.status not in {"Concluida", "Cancelada"} and (
+    return ticket.status == "Em Andamento" and (
         user.has_permission("can_manage_settings") or user.has_permission("can_work_tickets")
     )
 
 
-def category_schema_payload():
-    categories = Category.query.filter_by(active=True).order_by(Category.name).all()
+def add_ticket_attachments(ticket, files, user, kind, label):
+    attachments = []
+    for stored_path, original_name in save_uploads(files, ticket.id, label):
+        attachment = TicketAttachment(
+            ticket_id=ticket.id,
+            stored_path=stored_path,
+            original_name=original_name,
+            kind=kind,
+            uploaded_by_id=user.id,
+        )
+        db.session.add(attachment)
+        attachments.append(attachment)
+        if kind == "initial" and not ticket.initial_file:
+            ticket.initial_file = stored_path
+        if kind == "final" and not ticket.final_file:
+            ticket.final_file = stored_path
+    return attachments
+
+
+def category_schema_payload(include_category_id=None, values=None):
+    categories = [
+        category
+        for category in Category.query.order_by(Category.name).all()
+        if category.active or category.id == include_category_id
+    ]
+    values = values or {}
     return {
         category.id: [
-            {"id": field.id, "name": field.name, "type": field.field_type, "required": field.required}
+            {
+                "id": field.id,
+                "name": field.name,
+                "type": field.field_type,
+                "required": field.required,
+                "value": values.get(field.name, ""),
+            }
             for field in category.fields
         ]
         for category in categories
@@ -277,9 +308,21 @@ def list_tickets():
 @login_required
 def kanban():
     query, filters = filtered_tickets_query()
-    rows = order_tickets_query(query, filters["sort"]).limit(300).all()
+    cutoff = utc_now() - timedelta(days=7)
+    active_rows = order_tickets_query(query.filter(Ticket.status != "Concluida"), filters["sort"]).limit(300).all()
+    concluded_rows = (
+        order_tickets_query(
+            query.filter(
+                Ticket.status == "Concluida",
+                func.coalesce(Ticket.completed_at, Ticket.updated_at, Ticket.created_at) >= cutoff,
+            ),
+            filters["sort"],
+        )
+        .limit(300)
+        .all()
+    )
     columns = {status_name: [] for status_name in STATUSES}
-    for ticket in rows:
+    for ticket in [*active_rows, *concluded_rows]:
         columns.setdefault(ticket.status, []).append(ticket)
     return render_template(
         "tickets/kanban.html",
@@ -338,7 +381,7 @@ def create_ticket():
             )
             db.session.add(ticket)
             db.session.flush()
-            ticket.initial_file = save_upload(form.initial_file.data, ticket.id, "INICIAL")
+            add_ticket_attachments(ticket, form.initial_files.data, current_user, "initial", "INICIAL")
             db.session.add(TicketHistory(ticket_id=ticket.id, user_id=current_user.id, action="criada"))
             audit("Ticket", ticket.id, "created", after={"title": ticket.title})
             worker_ids = [
@@ -376,28 +419,46 @@ def edit(ticket_id):
         flash("Apenas solicitacoes abertas podem ser editadas pelo solicitante ou gestor.", "danger")
         return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
-    form = TicketEditForm(obj=ticket)
-    configure_ticket_edit_form(form)
+    form = TicketForm(obj=ticket)
+    configure_ticket_form(form, include_category_id=ticket.category_id)
 
     if request.method == "GET":
+        form.category_id.data = ticket.category_id
         form.branch_id.data = ticket.branch_id or 0
         form.due_at.data = ticket.due_at.date()
 
     if form.validate_on_submit():
+        category = db.session.get(Category, form.category_id.data)
+        if not category or (not category.active and category.id != ticket.category_id):
+            flash("Categoria invalida ou inativa.", "danger")
+            return redirect(url_for("tickets.detail", ticket_id=ticket.id))
         before = {
             "title": ticket.title,
             "priority": ticket.priority,
+            "category_id": ticket.category_id,
             "branch_id": ticket.branch_id,
             "due_at": ticket.due_at.isoformat() if ticket.due_at else None,
             "custom_data": ticket.custom_data or {},
+            "initial_file": ticket.initial_file,
         }
         try:
             ticket.title = form.title.data.strip()
             ticket.description = form.description.data.strip()
             ticket.priority = form.priority.data
+            ticket.category_id = category.id
             ticket.branch_id = form.branch_id.data or None
             ticket.due_at = datetime.combine(form.due_at.data, time.max, tzinfo=timezone.utc)
-            ticket.custom_data = collect_custom_data(ticket.category)
+            ticket.custom_data = collect_custom_data(category)
+            added_attachments = add_ticket_attachments(ticket, form.initial_files.data, current_user, "initial", "INICIAL")
+            if added_attachments:
+                db.session.add(
+                    TicketHistory(
+                        ticket_id=ticket.id,
+                        user_id=current_user.id,
+                        action="anexo_adicionado",
+                        note=f"{len(added_attachments)} anexo(s) adicionado(s).",
+                    )
+                )
             db.session.add(TicketHistory(ticket_id=ticket.id, user_id=current_user.id, action="editada"))
             audit(
                 "Ticket",
@@ -407,9 +468,11 @@ def edit(ticket_id):
                 after={
                     "title": ticket.title,
                     "priority": ticket.priority,
+                    "category_id": ticket.category_id,
                     "branch_id": ticket.branch_id,
                     "due_at": ticket.due_at.isoformat(),
                     "custom_data": ticket.custom_data or {},
+                    "initial_file": ticket.initial_file,
                 },
             )
             notify_many(
@@ -430,12 +493,7 @@ def edit(ticket_id):
             log_exception(exc, status_code=500)
             flash(f"Nao foi possivel editar a solicitacao: {exc}", "danger")
 
-    schema_map = {
-        ticket.category_id: [
-            {"id": field.id, "name": field.name, "type": field.field_type, "required": field.required, "value": (ticket.custom_data or {}).get(field.name, "")}
-            for field in ticket.category.fields
-        ]
-    }
+    schema_map = category_schema_payload(include_category_id=ticket.category_id, values=ticket.custom_data or {})
     return render_template(
         "tickets/form.html",
         form=form,
@@ -460,7 +518,11 @@ def detail(ticket_id):
         action_form=action_form,
         transfer_form=transfer_form,
         can_transfer=can_transfer_ticket(current_user, ticket),
+        can_cancel=can_cancel_ticket(current_user, ticket),
+        can_edit=can_edit_ticket(current_user, ticket),
+        attachments=TicketAttachment.query.filter_by(ticket_id=ticket.id, deleted_at=None).all(),
         comment_form=comment_form,
+        active_seconds=active_seconds,
     )
 
 
@@ -479,8 +541,16 @@ def action(ticket_id):
             raise BadRequest("Informe uma observacao para esta acao.")
         final_file = None
         if form.action.data == "concluir":
-            final_file = save_upload(form.final_file.data, ticket.id, "FINAL")
+            final_attachments = add_ticket_attachments(ticket, form.final_files.data, current_user, "final", "FINAL")
+            if final_attachments:
+                final_file = final_attachments[0].stored_path
         apply_action(ticket, current_user, form.action.data, note=form.note.data, final_file=final_file)
+        email_event = {
+            "pausar": "pausada",
+            "concluir": "concluida",
+            "cancelar": "cancelada",
+            "reabrir": "reaberta",
+        }.get(form.action.data)
         recipients = [ticket.requester_id, ticket.assignee_id]
         notify_many(
             recipients,
@@ -490,6 +560,15 @@ def action(ticket_id):
             exclude_user_id=current_user.id,
         )
         db.session.commit()
+        if email_event:
+            send_event_emails(
+                recipients,
+                email_event,
+                f"Service Desk: demanda #{ticket.id} atualizada",
+                f"A demanda #{ticket.id} - {ticket.title} foi alterada para {ticket.status} por {current_user.name}.",
+                ticket_id=ticket.id,
+                exclude_user_id=current_user.id,
+            )
         flash("Acao registrada com sucesso.", "success")
     except BadRequest as exc:
         db.session.rollback()
@@ -522,8 +601,6 @@ def transfer(ticket_id):
     before = {"assignee_id": ticket.assignee_id, "status": ticket.status}
     previous_assignee_id = ticket.assignee_id
     ticket.assignee_id = assignee.id
-    if ticket.status == "Aberta":
-        ticket.status = "Em Andamento"
     note = (form.note.data or "").strip() or f"Transferida para {assignee.name}."
     db.session.add(TicketHistory(ticket_id=ticket.id, user_id=current_user.id, action="transferida", note=note))
     audit(
@@ -561,6 +638,14 @@ def comment(ticket_id):
             exclude_user_id=current_user.id,
         )
         db.session.commit()
+        send_event_emails(
+            [ticket.requester_id, ticket.assignee_id],
+            "comentario",
+            f"Service Desk: novo comentario na demanda #{ticket.id}",
+            f"{current_user.name} adicionou um novo comentario na demanda #{ticket.id} - {ticket.title}.",
+            ticket_id=ticket.id,
+            exclude_user_id=current_user.id,
+        )
         flash("Comentario enviado.", "success")
     return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
@@ -570,9 +655,60 @@ def comment(ticket_id):
 def download(ticket_id, kind):
     ticket = load_ticket_or_404(ticket_id)
     if kind == "inicial":
-        path = ticket.initial_file
+        attachment_kind = "initial"
+        legacy_path = ticket.initial_file
     elif kind == "final":
-        path = ticket.final_file
+        attachment_kind = "final"
+        legacy_path = ticket.final_file
     else:
         abort(404)
+    attachments = TicketAttachment.query.filter_by(ticket_id=ticket.id, kind=attachment_kind).order_by(TicketAttachment.created_at.asc()).all()
+    attachment = next((item for item in attachments if item.deleted_at is None), None)
+    if attachment:
+        return send_protected_upload(attachment.stored_path)
+    if attachments:
+        abort(404)
+    path = legacy_path
     return send_protected_upload(path)
+
+
+@bp.route("/<int:ticket_id>/anexos/<int:attachment_id>")
+@login_required
+def download_attachment(ticket_id, attachment_id):
+    ticket = load_ticket_or_404(ticket_id)
+    attachment = db.get_or_404(TicketAttachment, attachment_id)
+    if attachment.ticket_id != ticket.id or attachment.deleted_at:
+        abort(404)
+    return send_protected_upload(attachment.stored_path)
+
+
+@bp.route("/<int:ticket_id>/anexos/<int:attachment_id>/excluir", methods=["POST"])
+@login_required
+def delete_attachment(ticket_id, attachment_id):
+    ticket = db.get_or_404(Ticket, ticket_id)
+    if not can_edit_ticket(current_user, ticket):
+        abort(403)
+    attachment = db.get_or_404(TicketAttachment, attachment_id)
+    if attachment.ticket_id != ticket.id or attachment.deleted_at:
+        abort(404)
+
+    attachment.deleted_at = utc_now()
+    attachment.deleted_by_id = current_user.id
+    db.session.add(
+        TicketHistory(
+            ticket_id=ticket.id,
+            user_id=current_user.id,
+            action="anexo_excluido",
+            note=f"Anexo removido: {attachment.original_name}",
+        )
+    )
+    audit(
+        "TicketAttachment",
+        attachment.id,
+        "deleted",
+        before={"ticket_id": ticket.id, "original_name": attachment.original_name},
+        after={"deleted": True},
+    )
+    db.session.commit()
+    flash("Anexo removido da demanda.", "success")
+    return redirect(url_for("tickets.detail", ticket_id=ticket.id))

@@ -11,4 +11,21 @@
     <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ form.submit.label.text }}</button>
   </form>
 </section>
+
+<section class="panel narrow">
+  <h2>Preferências de avisos por e-mail</h2>
+  <p class="muted">As notificações internas continuam ativas. O e-mail só será enviado para os eventos selecionados.</p>
+  <form method="post" action="{{ url_for('auth.save_notification_preferences') }}" class="stack">
+    {{ notification_form.hidden_tag() }}
+    <label class="check">{{ notification_form.email_enabled() }} {{ notification_form.email_enabled.label.text }}</label>
+    <div class="notification-preference-list">
+      <label class="check">{{ notification_form.pausada() }} {{ notification_form.pausada.label.text }}</label>
+      <label class="check">{{ notification_form.concluida() }} {{ notification_form.concluida.label.text }}</label>
+      <label class="check">{{ notification_form.reaberta() }} {{ notification_form.reaberta.label.text }}</label>
+      <label class="check">{{ notification_form.cancelada() }} {{ notification_form.cancelada.label.text }}</label>
+      <label class="check">{{ notification_form.comentario() }} {{ notification_form.comentario.label.text }}</label>
+    </div>
+    <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-bell me-2"></i>{{ notification_form.submit.label.text }}</button>
+  </form>
+</section>
 {% endblock %}

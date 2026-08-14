@@ -5,6 +5,9 @@
     <h1>Parametros</h1>
     <p>Categorias e filiais usadas nas solicitacoes.</p>
   </div>
+  <div class="title-actions">
+    <a class="button" href="{{ url_for('admin.email_settings') }}"><i class="fa-solid fa-envelope me-2"></i>Configurar e-mail</a>
+  </div>
 </section>
 
 <div class="two-col">
@@ -31,7 +34,7 @@
           </div>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ category_form.submit.label.text }}</button>
+      <button type="submit" name="category-submit" value="{{ category_form.submit.label.text }}" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ category_form.submit.label.text }}</button>
     </form>
   </section>
 
@@ -42,7 +45,7 @@
       <label>{{ branch_form.name.label }}{{ branch_form.name() }}</label>
       <label>{{ branch_form.kind.label }}{{ branch_form.kind() }}</label>
       <label class="check">{{ branch_form.active() }} {{ branch_form.active.label.text }}</label>
-      <button type="submit" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ branch_form.submit.label.text }}</button>
+      <button type="submit" name="branch-submit" value="{{ branch_form.submit.label.text }}" class="btn btn-primary fw-bold shadow-sm"><i class="fa-solid fa-save me-2"></i>{{ branch_form.submit.label.text }}</button>
     </form>
   </section>
 </div>

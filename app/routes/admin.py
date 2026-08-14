@@ -3,18 +3,19 @@ import io
 import json
 from datetime import datetime, time, timedelta, timezone
 
-from flask import Blueprint, abort, flash, make_response, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, abort, current_app, flash, make_response, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import func, or_
 from werkzeug.security import generate_password_hash
 
 from ..extensions import db
-from ..forms import AccessProfileForm, AdminPasswordResetForm, BackupRestoreForm, BackupSettingsForm, BranchForm, CategoryForm, UserEditForm, UserForm
+from ..forms import AccessProfileForm, AdminPasswordResetForm, BackupRestoreForm, BackupSettingsForm, BranchForm, CategoryForm, MailSettingsForm, UserEditForm, UserForm
 from ..models import AccessProfile, AuditLog, BackupConfig, BackupRun, Branch, Category, DynamicField, SystemErrorLog, Ticket, User
 from ..security import permission_required
 from ..services.audit import audit
 from ..services.backup import create_backup, get_backup_config, restore_backup, validate_backup_run
 from ..services.ticket_workflow import CANCELED, DONE
+from ..services.mail_service import load_mail_config, normalize_mail_config, save_mail_config, test_email_connection
 
 bp = Blueprint("admin", __name__)
 AUDIT_PER_PAGE = 50
@@ -506,6 +507,61 @@ def settings():
         categories=Category.query.order_by(Category.name).all(),
         branches=Branch.query.order_by(Branch.name).all(),
     )
+
+
+@bp.route("/email", methods=["GET", "POST"])
+@login_required
+@permission_required("can_manage_settings")
+def email_settings():
+    saved_settings = load_mail_config()
+    form = MailSettingsForm(
+        data={
+            "server": saved_settings.get("server", ""),
+            "port": saved_settings.get("port", 587),
+            "username": saved_settings.get("username", ""),
+            "sender": saved_settings.get("sender", ""),
+            "test_recipient": saved_settings.get("test_recipient") or current_user.email,
+            "use_tls": saved_settings.get("use_tls", False),
+            "use_ssl": saved_settings.get("use_ssl", False),
+        }
+    )
+    if form.validate_on_submit():
+        candidate = dict(saved_settings)
+        candidate.update(
+            server=form.server.data,
+            port=form.port.data,
+            username=form.username.data,
+            sender=form.sender.data,
+            test_recipient=form.test_recipient.data,
+            use_tls=form.use_tls.data,
+            use_ssl=form.use_ssl.data,
+        )
+        if form.password.data:
+            candidate["password"] = form.password.data
+        try:
+            candidate = normalize_mail_config(candidate)
+            if form.test.data:
+                recipient = form.test_recipient.data or current_user.email
+                sent, error_message = test_email_connection(
+                    recipient,
+                    "Teste de e-mail - Service Desk V2.1",
+                    "Este e-mail confirma que a configuração SMTP do Service Desk está funcionando.",
+                    settings=candidate,
+                )
+                if not sent:
+                    flash(
+                        f"Teste de conexão não realizado: {error_message} A configuração anteriormente salva permanece preservada.",
+                        "danger",
+                    )
+                    return render_template("admin/email_settings.html", form=form)
+            save_mail_config(candidate)
+            audit("MailSettings", None, "tested_and_saved" if form.test.data else "saved", after={"server": candidate["server"], "port": candidate["port"], "sender": candidate["sender"]})
+            db.session.commit()
+            flash("Configuração de e-mail salva com sucesso.", "success")
+            return redirect(url_for("admin.email_settings"))
+        except (ValueError, OSError) as exc:
+            flash(f"Não foi possível salvar a configuração de e-mail: {exc}", "danger")
+    return render_template("admin/email_settings.html", form=form)
 
 
 @bp.route("/categorias/<int:category_id>/editar", methods=["GET", "POST"])

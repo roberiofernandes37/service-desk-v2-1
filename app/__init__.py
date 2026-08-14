@@ -2,20 +2,23 @@ import csv
 import json
 from pathlib import Path
 
-from flask import Flask
+from flask import Flask, flash, redirect, request, url_for
 import click
 from dotenv import load_dotenv
 from flask_login import current_user
+from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 from werkzeug.security import generate_password_hash
 
 from .config import load_config
-from .extensions import csrf, db, login_manager, migrate
-from .models import AccessProfile, BackupRun, Category, Notification, SystemErrorLog, User
+from .extensions import csrf, db, login_manager, mail, migrate
+from .models import AccessProfile, BackupRun, Category, Notification, SystemErrorLog, Ticket, TicketAttachment, User
 from .services.backup import create_backup, get_backup_config, restore_backup, validate_backup_run
 from .services.error_logging import ERROR_LOG_FILENAME
 from .services.sla import format_duration, sla_state
+from .services.ticket_workflow import active_seconds
+from .services.mail_service import apply_mail_config
 
 
 def create_app(config_object=None):
@@ -30,6 +33,9 @@ def create_app(config_object=None):
     migrate.init_app(app, db)
     csrf.init_app(app)
     login_manager.init_app(app)
+    apply_mail_config(app)
+    if mail:
+        mail.init_app(app)
     login_manager.login_view = "auth.login"
     login_manager.login_message = "Faca login para continuar."
     login_manager.login_message_category = "warning"
@@ -55,10 +61,56 @@ def register_blueprints(app):
 
 
 def register_commands(app):
+    def ensure_ticket_workflow_columns():
+        inspector = inspect(db.engine)
+        if "tickets" not in inspector.get_table_names():
+            return
+
+        existing_columns = {column["name"] for column in inspector.get_columns("tickets")}
+        for column_name in ("completed_at", "resolved_by_id"):
+            if column_name in existing_columns:
+                continue
+            column = Ticket.__table__.c[column_name]
+            column_type = column.type.compile(dialect=db.engine.dialect)
+            db.session.execute(text(f"ALTER TABLE tickets ADD COLUMN {column_name} {column_type}"))
+        db.session.commit()
+
+    def migrate_legacy_ticket_attachments():
+        for ticket in Ticket.query.all():
+            legacy_files = ((ticket.initial_file, "initial"), (ticket.final_file, "final"))
+            for stored_path, kind in legacy_files:
+                if not stored_path:
+                    continue
+                exists = TicketAttachment.query.filter_by(
+                    ticket_id=ticket.id,
+                    stored_path=stored_path,
+                    kind=kind,
+                ).first()
+                if exists:
+                    continue
+                original_name = stored_path.rsplit("/", 1)[-1]
+                prefix = f"REQ-{ticket.id}_INICIAL_" if kind == "initial" else f"REQ-{ticket.id}_FINAL_"
+                if original_name.startswith(prefix):
+                    original_name = original_name[len(prefix):]
+                    if "_" in original_name:
+                        original_name = original_name.split("_", 1)[1]
+                db.session.add(
+                    TicketAttachment(
+                        ticket_id=ticket.id,
+                        stored_path=stored_path,
+                        original_name=original_name,
+                        kind=kind,
+                        uploaded_by_id=ticket.requester_id,
+                    )
+                )
+        db.session.commit()
+
     @app.cli.command("init-db")
     def init_db():
         """Create database tables and starter records."""
         db.create_all()
+        ensure_ticket_workflow_columns()
+        migrate_legacy_ticket_attachments()
         if not AccessProfile.query.filter_by(name="Administrador").first():
             db.session.add(
                 AccessProfile(
@@ -289,6 +341,7 @@ def register_template_context(app):
                 "unread_notification_count": 0,
                 "sla_state": sla_state,
                 "format_duration": format_duration,
+                "active_seconds": active_seconds,
             }
         try:
             unread = (
@@ -305,10 +358,17 @@ def register_template_context(app):
             "unread_notification_count": len(unread),
             "sla_state": sla_state,
             "format_duration": format_duration,
+            "active_seconds": active_seconds,
         }
 
 
 def register_error_handlers(app):
+    @app.errorhandler(RequestEntityTooLarge)
+    def upload_too_large(exc):
+        limit_mb = app.config["MAX_CONTENT_LENGTH"] // (1024 * 1024)
+        flash(f"Os anexos ultrapassam o limite total de {limit_mb} MB. Reduza os arquivos e tente novamente.", "danger")
+        return redirect(request.referrer or url_for("tickets.create_ticket"))
+
     @app.errorhandler(Exception)
     def capture_unhandled_error(exc):
         if app.testing:

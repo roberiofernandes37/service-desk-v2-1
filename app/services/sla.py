@@ -16,6 +16,8 @@ def sla_state(ticket, now=None):
         return {"key": "none", "label": "-", "is_active": False}
     if ticket.status in FINAL_STATUSES:
         return {"key": "done", "label": "Finalizada", "is_active": False}
+    if ticket.status == "Pausada":
+        return {"key": "paused", "label": "Pausada", "is_active": False}
 
     now = normalize_datetime(now or datetime.now(timezone.utc))
     due_at = normalize_datetime(ticket.due_at)

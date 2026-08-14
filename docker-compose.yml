@@ -17,7 +17,7 @@ services:
   web:
     build: .
     ports:
-      - "8091:8000"
+      - "18437:8000"
     environment:
       FLASK_ENV: production
       FLASK_APP: wsgi:app
@@ -26,12 +26,13 @@ services:
       UPLOAD_ROOT: /srv/service-desk/uploads
       LOG_ROOT: /srv/service-desk/logs
       BACKUP_ROOT: /srv/service-desk/backups
-      MAX_UPLOAD_MB: 10
+      MAX_UPLOAD_MB: 50
       COOKIE_SECURE: "false"
     volumes:
       - uploads_data:/srv/service-desk/uploads
       - logs_data:/srv/service-desk/logs
       - backups_data:/srv/service-desk/backups
+      - instance_data:/srv/service-desk/instance
     depends_on:
       db:
         condition: service_healthy
@@ -47,3 +48,4 @@ volumes:
   uploads_data:
   logs_data:
   backups_data:
+  instance_data:

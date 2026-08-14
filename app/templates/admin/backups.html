@@ -70,10 +70,10 @@ docker compose exec web flask backup-restore --id ID --confirm RESTAURAR</pre>
             <td class="px-4">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
             <td>{{ "Backup" if item.action == "backup" else "Restauracao" }}</td>
             <td><span class="badge {{ 'status-concluida' if item.status == 'success' else 'status-pausada' if item.status == 'running' else 'status-cancelada' }}">{{ backup_status_label(item.status) }}</span></td>
-            <td class="ticket-title">{{ item.file_name or "-" }}</td>
+            <td class="ticket-title"><span class="ticket-title-text">{{ item.file_name or "-" }}</span></td>
             <td>{{ format_bytes(item.size_bytes) }}</td>
             <td>{{ item.user.name if item.user else "-" }}</td>
-            <td class="ticket-title">{{ item.message or item.error_message or "-" }}</td>
+            <td class="ticket-title"><span class="ticket-title-text">{{ item.message or item.error_message or "-" }}</span></td>
             <td class="px-4">
               <div class="row-actions">
                 {% if item.action == "backup" and item.status == "success" %}

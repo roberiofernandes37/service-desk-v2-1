@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed, FileField
+from flask_wtf.file import FileAllowed, FileField, MultipleFileField
 from wtforms import BooleanField, DateField, EmailField, HiddenField, IntegerField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional
 
@@ -17,6 +17,29 @@ class ProfilePasswordForm(FlaskForm):
     submit = SubmitField("Alterar senha")
 
 
+class EmailNotificationPreferencesForm(FlaskForm):
+    email_enabled = BooleanField("Receber avisos por e-mail")
+    pausada = BooleanField("Quando uma demanda for pausada")
+    concluida = BooleanField("Quando uma demanda for concluída")
+    reaberta = BooleanField("Quando uma demanda for reaberta")
+    cancelada = BooleanField("Quando uma demanda for cancelada")
+    comentario = BooleanField("Quando houver um novo comentário")
+    submit = SubmitField("Salvar preferências")
+
+
+class MailSettingsForm(FlaskForm):
+    server = StringField("Servidor SMTP", validators=[Optional(), Length(max=200)])
+    port = IntegerField("Porta", validators=[Optional(), NumberRange(min=1, max=65535)])
+    username = StringField("Usuário SMTP", validators=[Optional(), Length(max=200)])
+    password = PasswordField("Senha SMTP", validators=[Optional(), Length(max=300)])
+    sender = EmailField("Remetente padrão", validators=[Optional(), Email()])
+    test_recipient = EmailField("Destinatário do teste", validators=[Optional(), Email()])
+    use_tls = BooleanField("Usar TLS")
+    use_ssl = BooleanField("Usar SSL")
+    save = SubmitField("Apenas salvar")
+    test = SubmitField("Testar conexão de e-mail")
+
+
 class TicketForm(FlaskForm):
     title = StringField("Titulo", validators=[DataRequired(), Length(max=200)])
     description = TextAreaField("Descricao", validators=[DataRequired()])
@@ -28,31 +51,18 @@ class TicketForm(FlaskForm):
     category_id = SelectField("Categoria", coerce=int, validators=[DataRequired()])
     branch_id = SelectField("Filial", coerce=int, validators=[Optional()])
     due_at = DateField("Prazo SLA", validators=[DataRequired()])
-    initial_file = FileField(
-        "Anexo inicial",
+    initial_files = MultipleFileField(
+        "Anexos iniciais",
         validators=[FileAllowed(["txt", "pdf", "png", "jpg", "jpeg", "csv", "xlsx", "xls", "doc", "docx", "xml", "ppt", "pptx"])],
     )
     submit = SubmitField("Salvar solicitacao")
 
 
-class TicketEditForm(FlaskForm):
-    title = StringField("Titulo", validators=[DataRequired(), Length(max=200)])
-    description = TextAreaField("Descricao", validators=[DataRequired()])
-    priority = SelectField(
-        "Prioridade",
-        choices=[("Baixa", "Baixa"), ("Media", "Media"), ("Alta", "Alta"), ("Urgente", "Urgente")],
-        validators=[DataRequired()],
-    )
-    branch_id = SelectField("Filial", coerce=int, validators=[Optional()])
-    due_at = DateField("Prazo SLA", validators=[DataRequired()])
-    submit = SubmitField("Salvar alteracoes")
-
-
 class TicketActionForm(FlaskForm):
     action = HiddenField("Acao", validators=[DataRequired()])
     note = TextAreaField("Observacao", validators=[Optional(), Length(max=4000)])
-    final_file = FileField(
-        "Arquivo final",
+    final_files = MultipleFileField(
+        "Arquivos finais",
         validators=[FileAllowed(["txt", "pdf", "png", "jpg", "jpeg", "csv", "xlsx", "xls", "doc", "docx", "xml", "ppt", "pptx"])],
     )
     submit = SubmitField("Confirmar")

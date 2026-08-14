@@ -10,7 +10,7 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_TIME_LIMIT = 3600
-    MAX_CONTENT_LENGTH = int(os.environ.get("MAX_UPLOAD_MB", "10")) * 1024 * 1024
+    MAX_CONTENT_LENGTH = int(os.environ.get("MAX_UPLOAD_MB", "50")) * 1024 * 1024
     UPLOAD_ROOT = os.environ.get("UPLOAD_ROOT", "uploads")
     LOG_ROOT = os.environ.get("LOG_ROOT", "logs")
     BACKUP_ROOT = os.environ.get("BACKUP_ROOT", "backups")

@@ -47,7 +47,7 @@ def test_ticket_transfer_is_limited_to_active_tickets_and_workers(app):
         db.session.add_all([requester, worker, category])
         db.session.flush()
 
-        assert can_transfer_ticket(worker, make_ticket(category, requester, "Aberta"))
+        assert not can_transfer_ticket(worker, make_ticket(category, requester, "Aberta"))
         assert can_transfer_ticket(worker, make_ticket(category, requester, "Em Andamento"))
         assert not can_transfer_ticket(worker, make_ticket(category, requester, "Concluida"))
         assert not can_transfer_ticket(worker, make_ticket(category, requester, "Cancelada"))

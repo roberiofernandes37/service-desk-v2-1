@@ -58,10 +58,25 @@
         <dt>Tempo pausado</dt>
         <dd>{{ format_duration(ticket.total_paused_seconds) }}</dd>
       </div>
+      <div>
+        <dt>Tempo em atendimento</dt>
+        <dd>{{ format_duration(active_seconds(ticket, ticket.completed_at) if ticket.completed_at else active_seconds(ticket)) }}</dd>
+      </div>
+      {% if ticket.completed_at %}
+        <div>
+          <dt>Concluida em</dt>
+          <dd>{{ ticket.completed_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+        </div>
+      {% endif %}
     </dl>
     <hr>
     <h2>Escopo</h2>
     <p class="preline">{{ ticket.description }}</p>
+    {% if ticket.resolution_note %}
+      <hr>
+      <h2>Solucao registrada</h2>
+      <p class="preline">{{ ticket.resolution_note }}</p>
+    {% endif %}
     {% if ticket.custom_data %}
       <div class="custom-data">
         <h2>Dados da categoria</h2>
@@ -75,14 +90,37 @@
         </dl>
       </div>
     {% endif %}
-    <div class="file-row">
-      {% if ticket.initial_file %}
-        <a class="small-button" href="{{ url_for('tickets.download', ticket_id=ticket.id, kind='inicial') }}">Baixar anexo inicial</a>
-      {% endif %}
-      {% if ticket.final_file %}
-        <a class="small-button" href="{{ url_for('tickets.download', ticket_id=ticket.id, kind='final') }}">Baixar entrega</a>
-      {% endif %}
-    </div>
+    {% if attachments %}
+      <section class="attachments-panel">
+        <div class="panel-head">
+          <h2>Anexos</h2>
+          <span class="muted">{{ attachments|length }} arquivo(s) vinculado(s) a esta demanda</span>
+        </div>
+        <div class="attachment-list">
+          {% for attachment in attachments %}
+            <div class="attachment-item" data-attachment-id="{{ attachment.id }}">
+              <div class="attachment-info">
+                <i class="fa-solid {{ 'fa-file-circle-check text-success' if attachment.kind == 'final' else 'fa-paperclip text-primary' }}" aria-hidden="true"></i>
+                <div>
+                  <strong>{{ 'Arquivo final' if attachment.kind == 'final' else 'Anexo inicial' }}</strong>
+                  <span>{{ attachment.original_name }}</span>
+                  <small class="attachment-meta">Enviado por {{ attachment.uploaded_by.name }} em {{ attachment.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                </div>
+              </div>
+              <div class="row-actions">
+                <a class="small-button" href="{{ url_for('tickets.download_attachment', ticket_id=ticket.id, attachment_id=attachment.id) }}">Baixar</a>
+                {% if can_edit %}
+                  <form method="post" action="{{ url_for('tickets.delete_attachment', ticket_id=ticket.id, attachment_id=attachment.id) }}" onsubmit="return confirm('Excluir este anexo da demanda?');">
+                    {{ action_form.csrf_token }}
+                    <button type="submit" class="small-button danger-button">Excluir</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
     </section>
 
     <section class="panel comments-panel">
@@ -111,32 +149,39 @@
       <h2>Acoes</h2>
       {% set actions = [] %}
       {% if ticket.status == "Aberta" %}
-        {% set actions = [("assumir", "Assumir"), ("cancelar", "Cancelar")] %}
+        {% if current_user.has_permission('can_work_tickets') or current_user.has_permission('can_manage_settings') %}
+          {% set actions = [("assumir", "Assumir")] %}
+        {% endif %}
       {% elif ticket.status == "Em Andamento" %}
-        {% set actions = [("pausar", "Pausar"), ("concluir", "Concluir"), ("cancelar", "Cancelar")] %}
+        {% set actions = [("pausar", "Pausar"), ("concluir", "Concluir")] %}
       {% elif ticket.status == "Pausada" %}
-        {% set actions = [("retomar", "Retomar"), ("cancelar", "Cancelar")] %}
+        {% set actions = [("retomar", "Retomar")] %}
       {% elif ticket.status == "Concluida" %}
         {% set actions = [("reabrir", "Reabrir")] %}
       {% endif %}
 
       {% for code, label in actions %}
-        <form method="post" action="{{ url_for('tickets.action', ticket_id=ticket.id) }}" enctype="multipart/form-data" class="action-box">
-          {{ action_form.csrf_token }}
-          <input type="hidden" name="action" value="{{ code }}">
-          {% if code in ["pausar", "cancelar", "concluir"] %}
-            <textarea name="note" rows="3" placeholder="Observacao obrigatoria para a acao"></textarea>
-          {% endif %}
-          {% if code == "concluir" %}
-            <input type="file" name="final_file">
-          {% endif %}
-          <button type="submit" class="action-{{ code }}">{{ label }}</button>
-        </form>
+        {% if code in ["pausar", "concluir"] %}
+          <button type="button" class="action-{{ code }}" data-bs-toggle="modal" data-bs-target="#ticketActionModal" data-action="{{ code }}" data-label="{{ label }}">{{ label }}</button>
+        {% else %}
+          <form method="post" action="{{ url_for('tickets.action', ticket_id=ticket.id) }}" class="action-box">
+            {{ action_form.csrf_token }}
+            <input type="hidden" name="action" value="{{ code }}">
+            <button type="submit" class="action-{{ code }}">{{ label }}</button>
+          </form>
+        {% endif %}
       {% else %}
         <p class="muted">Nenhuma acao disponivel para este status.</p>
       {% endfor %}
 
-      {% if can_transfer and transfer_form.assignee_id.choices %}
+      {% if can_cancel and ticket.status not in ["Concluida", "Cancelada"] %}
+        <details class="critical-actions">
+          <summary class="small-button">Acoes criticas</summary>
+          <button type="button" class="action-cancelar" data-bs-toggle="modal" data-bs-target="#ticketActionModal" data-action="cancelar" data-label="Cancelar">Cancelar demanda</button>
+        </details>
+      {% endif %}
+
+      {% if can_transfer and ticket.status == "Em Andamento" and transfer_form.assignee_id.choices %}
         <hr>
         <h2>Transferir responsavel</h2>
         <form method="post" action="{{ url_for('tickets.transfer', ticket_id=ticket.id) }}" class="stack compact">
@@ -150,10 +195,22 @@
 
     <section class="panel timeline-panel">
       <h2>Historico</h2>
+      {% set action_labels = {
+        "assumir": "Demanda assumida",
+        "pausar": "Demanda pausada",
+        "retomar": "Atendimento retomado",
+        "concluir": "Demanda concluida",
+        "cancelar": "Demanda cancelada",
+        "reabrir": "Demanda reaberta",
+        "transferida": "Responsavel transferido",
+        "editada": "Demanda editada",
+        "anexo_adicionado": "Anexo adicionado",
+        "anexo_excluido": "Anexo excluido"
+      } %}
       <ol class="history">
         {% for item in ticket.history %}
           <li>
-            <strong>{{ item.action }}</strong>
+            <strong>{{ action_labels.get(item.action, item.action) }}</strong>
             <span>{{ item.user.name }} - {{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
             {% if item.note %}<p>{{ item.note }}</p>{% endif %}
           </li>
@@ -164,4 +221,56 @@
     </section>
   </aside>
 </div>
+
+<div class="modal fade" id="ticketActionModal" tabindex="-1" aria-labelledby="ticketActionModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ticketActionModalTitle">Registrar acao</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="post" action="{{ url_for('tickets.action', ticket_id=ticket.id) }}" enctype="multipart/form-data">
+        {{ action_form.csrf_token }}
+        <input type="hidden" name="action" id="ticketActionCode">
+        <div class="modal-body">
+          <p class="muted" id="ticketActionDescription"></p>
+          <label for="ticketActionNote" class="form-label fw-bold">Observacao</label>
+          <textarea class="form-control" name="note" id="ticketActionNote" rows="5" required></textarea>
+          <div id="ticketFinalFileGroup" class="mt-3" hidden>
+            <label for="ticketFinalFile" class="form-label fw-bold">Arquivos finais (opcional)</label>
+            <input class="form-control" type="file" name="final_files" id="ticketFinalFile" multiple>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Voltar</button>
+          <button type="submit" class="btn btn-primary fw-bold" id="ticketActionSubmit">Confirmar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ticketActionModal = document.getElementById('ticketActionModal');
+  if (ticketActionModal) {
+    ticketActionModal.addEventListener('show.bs.modal', (event) => {
+      const trigger = event.relatedTarget;
+      const action = trigger.dataset.action;
+      const label = trigger.dataset.label;
+      const descriptions = {
+        pausar: 'Informe por que a demanda ficará aguardando atendimento.',
+        concluir: 'Descreva a solução técnica aplicada para resolver a demanda.',
+        cancelar: 'Informe o motivo do cancelamento da demanda.'
+      };
+      document.getElementById('ticketActionModalTitle').textContent = label;
+      document.getElementById('ticketActionDescription').textContent = descriptions[action] || '';
+      document.getElementById('ticketActionCode').value = action;
+      document.getElementById('ticketActionNote').value = '';
+      document.getElementById('ticketActionNote').placeholder = descriptions[action] || 'Informe uma observacao';
+      document.getElementById('ticketFinalFileGroup').hidden = action !== 'concluir';
+      document.getElementById('ticketFinalFile').disabled = action !== 'concluir';
+      document.getElementById('ticketActionSubmit').textContent = label;
+    });
+  }
+</script>
 {% endblock %}

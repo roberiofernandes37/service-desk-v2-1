@@ -8,7 +8,7 @@ Nova base do Service Desk, criada em pasta separada para substituir gradualmente
 - CSRF habilitado em todos os formularios.
 - Regras de permissao aplicadas no backend, nao apenas na tela.
 - Uploads fora do codigo-fonte e protegidos contra path traversal.
-- Docker com Gunicorn na porta `8091` para teste local.
+- Docker com Gunicorn na porta `18437` para teste local.
 - PostgreSQL em volume separado no Docker.
 - Sem segredos versionados.
 
@@ -19,24 +19,32 @@ Nova base do Service Desk, criada em pasta separada para substituir gradualmente
 3. Execute:
 
 ```powershell
-docker compose up --build
+docker-compose up --build
 ```
 
-A aplicacao ficara em `http://localhost:8091`.
+A aplicacao ficara em `http://localhost:18437`.
 
 ## Inicializar banco
 
 Depois que os containers estiverem no ar:
 
 ```powershell
-docker compose exec web flask init-db
-docker compose exec web flask seed-admin --email admin@empresa.com.br --password "troque-esta-senha"
+docker-compose exec web flask init-db
+docker-compose exec web flask seed-admin --email admin@empresa.com.br --password "troque-esta-senha"
+
 ```
 
-Sempre que uma nova tabela for adicionada durante o desenvolvimento, rode novamente:
+Diagnóstico de e-mail:
+
+```bash
+docker-compose exec web python scripts/diagnose_email.py
+docker-compose exec web python scripts/diagnose_email.py --send-test --recipient seu-email@empresa.com.br
+```
+
+Sempre que uma nova tabela ou coluna for adicionada durante o desenvolvimento, rode novamente:
 
 ```powershell
-docker compose exec web flask init-db
+docker-compose exec web flask init-db
 ```
 
 Esse comando cria tabelas ausentes sem apagar os dados existentes.
@@ -46,19 +54,19 @@ Esse comando cria tabelas ausentes sem apagar os dados existentes.
 Se a tela nao abrir, consulte os erros pelo terminal:
 
 ```powershell
-docker compose exec web flask errors
+docker-compose exec web flask errors
 ```
 
 Se o banco estiver indisponivel, leia o arquivo de fallback:
 
 ```powershell
-docker compose exec web flask errors --source file
+docker-compose exec web flask errors --source file
 ```
 
 Para exportar os erros do banco para CSV dentro do container:
 
 ```powershell
-docker compose exec web flask errors-export
+docker-compose exec web flask errors-export
 ```
 
 O arquivo de fallback fica em `/srv/service-desk/logs/service_desk_errors.log`.
@@ -70,13 +78,13 @@ A tela administrativa `Backup` permite configurar horarios, quantidade a manter,
 Comandos de emergencia:
 
 ```powershell
-docker compose exec web flask backup-create
-docker compose exec web flask backup-list
-docker compose exec web flask backup-test --id ID
-docker compose exec web flask backup-restore --id ID --confirm RESTAURAR
+docker-compose exec web flask backup-create
+docker-compose exec web flask backup-list
+docker-compose exec web flask backup-test --id ID
+docker-compose exec web flask backup-restore --id ID --confirm RESTAURAR
 ```
 
-Para agendamento automatico, use o Agendador de Tarefas do Windows chamando `docker compose exec web flask backup-create` nos horarios configurados na tela. Os arquivos ficam no volume Docker montado em `/srv/service-desk/backups`.
+Para agendamento automatico, use o Agendador de Tarefas do Windows chamando `docker-compose exec web flask backup-create` nos horarios configurados na tela. Os arquivos ficam no volume Docker montado em `/srv/service-desk/backups`.
 
 ## Testes locais
 

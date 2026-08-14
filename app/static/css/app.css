@@ -488,6 +488,7 @@ th { color: var(--muted); font-size: 12px; font-weight: 900; text-transform: upp
   font-weight: 800;
 }
 .due-ok { background: #dff8eb; color: #087044; }
+.due-paused { background: #e0e7ff; color: #3730a3; }
 .due-today { background: #fff2b8; color: #7a4b00; }
 .due-overdue { background: #ffe1e6; color: var(--danger); }
 .due-done, .due-none { background: #e5e7eb; color: #374151; }
@@ -697,6 +698,41 @@ textarea { resize: vertical; }
   background: #f8fbff;
   padding: 10px;
 }
+.attachments-panel {
+  margin-top: 16px;
+  border: 1px solid #b8d4ff;
+  border-radius: 8px;
+  background: #f8fbff;
+  padding: 12px;
+}
+.attachment-list { display: grid; gap: 8px; margin-top: 10px; }
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  background: white;
+  padding: 10px;
+}
+.attachment-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+.attachment-info > i { margin-top: 3px; }
+.attachment-info > div { min-width: 0; }
+.attachment-info strong,
+.attachment-info span {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.attachment-info span { color: var(--muted); font-size: 12px; }
+.attachment-meta { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+.danger-button { color: #b42318; border-color: #f3b5b0; }
 .action-box { display: grid; gap: 10px; margin-bottom: 12px; }
 .comment-form { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-bottom: 16px; }
 .comments article, .history li { border-top: 1px solid var(--line); padding: 12px 0; }
@@ -733,7 +769,7 @@ textarea { resize: vertical; }
   padding-bottom: 8px;
 }
 .kanban-column {
-  flex: 0 0 252px;
+  flex: 0 0 268px;
   min-height: 220px;
   background: #f3f7ff;
   border: 1px solid var(--line);
@@ -741,16 +777,38 @@ textarea { resize: vertical; }
   border-radius: 8px;
   padding: 9px;
 }
-.kanban-column:nth-child(1) { border-top-color: var(--info); }
-.kanban-column:nth-child(2) { border-top-color: var(--primary); }
-.kanban-column:nth-child(3) { border-top-color: var(--warning); background: #fff9df; }
-.kanban-column:nth-child(4) { border-top-color: var(--ok); }
-.kanban-column:nth-child(5) { border-top-color: #94a3b8; }
+.kanban-aberta { border-top-color: var(--info); }
+.kanban-em-andamento { border-top-color: var(--primary); }
+.kanban-pausada { border-top-color: var(--warning); background: #fff9df; }
+.kanban-concluida { border-top-color: var(--ok); opacity: .88; }
+.kanban-cancelada { border-top-color: #94a3b8; background: #f1f5f9; }
 .kanban-column header {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+.kanban-column header strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.kanban-aberta header strong { color: #07869a; }
+.kanban-em-andamento header strong { color: var(--primary-dark); }
+.kanban-pausada header strong { color: #8a5a00; }
+.kanban-concluida header strong { color: var(--ok); }
+.kanban-cancelada header strong { color: #64748b; }
+.kanban-column header small {
+  position: absolute;
+  top: 17px;
+  left: 25px;
+  color: var(--ok);
+  font-size: 9px;
+  text-transform: uppercase;
 }
 .kanban-column header span {
   display: inline-flex;
@@ -763,6 +821,7 @@ textarea { resize: vertical; }
   border: 1px solid var(--line);
   font-weight: 800;
 }
+.kanban-count { color: var(--ink); }
 .kanban-cards { display: grid; gap: 8px; }
 .ticket-card {
   background: white;
@@ -770,13 +829,45 @@ textarea { resize: vertical; }
   border-radius: 8px;
   padding: 9px;
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.05);
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
-.kanban-column:nth-child(3) .ticket-card {
+.ticket-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.14);
+}
+.kanban-em-andamento .ticket-card {
+  border-left: 4px solid var(--primary);
+}
+.kanban-pausada .ticket-card {
+  border-left: 4px solid var(--warning);
   border-color: #ffe08a;
   background: #fffdf2;
 }
-.ticket-card h2 { font-size: 13px; margin-top: 6px; overflow-wrap: anywhere; line-height: 1.25; }
+.kanban-concluida .ticket-card {
+  border-left: 4px solid var(--ok);
+}
+.kanban-cancelada .ticket-card {
+  border-left: 4px solid #94a3b8;
+}
+.ticket-card h2 { font-size: 15px; margin: 8px 0 7px; overflow-wrap: anywhere; line-height: 1.25; }
+.ticket-card-completed h2 { text-decoration: line-through; color: #64748b; }
 .ticket-card p { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.priority-badge,
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.priority-badge { background: #e5e7eb; color: #374151; }
+.priority-urgente { background: #ef3340; color: #fff; }
+.priority-alta { background: #facc15; color: #713f12; }
+.priority-media { background: #cbd5e1; color: #334155; }
+.priority-baixa { background: #94a3b8; color: #fff; }
+.category-chip { background: #64748b; color: #fff; margin-bottom: 3px; }
 .kanban-fields {
   display: grid;
   gap: 4px;
@@ -788,6 +879,32 @@ textarea { resize: vertical; }
   overflow-wrap: anywhere;
 }
 .kanban-fields strong { color: var(--ink); }
+.kanban-people,
+.kanban-sla {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid #dbe3ef;
+  margin-top: 8px;
+  padding-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.kanban-people span,
+.kanban-sla span { min-width: 0; overflow-wrap: anywhere; }
+.kanban-people i,
+.kanban-sla i { margin-right: 4px; color: var(--info); }
+.sla-frozen { color: var(--danger) !important; font-weight: 800; }
+.sla-frozen i { color: var(--danger) !important; }
+.completed-mark { color: var(--ok) !important; font-weight: 800; }
+.completed-mark i { color: var(--ok) !important; }
+.kanban-card-action { margin-top: 10px; }
+.kanban-card-action .small-button { width: 100%; border-color: var(--primary); color: var(--primary-dark); }
+.kanban-em-andamento .kanban-card-action .small-button { background: var(--primary); color: #fff; }
+.kanban-pausada .kanban-card-action .small-button { background: var(--warning); border-color: var(--warning); color: #111827; }
+.kanban-concluida .kanban-card-action .small-button,
+.kanban-cancelada .kanban-card-action .small-button { background: #fff; border-color: #cbd5e1; color: #334155; }
 .card-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ticket-id { font-weight: 800; color: var(--muted); }
 .small-empty { padding: 18px 4px; }
@@ -1197,6 +1314,8 @@ summary.small-button::-webkit-details-marker { display: none; }
   .row-actions { justify-content: flex-start; }
   .restore-confirm { width: 100%; }
   .audit-meta { gap: 10px; }
+  .ticket-title-text { width: 200px; max-width: 200px; }
+  .attachment-item { align-items: stretch; flex-direction: column; }
 }
 
 /* Bootstrap 5.3 visual standardization layer */
@@ -1204,6 +1323,27 @@ summary.small-button::-webkit-details-marker { display: none; }
 .btn-primary {
   background-color: #2563eb !important;
   border-color: #2563eb !important;
+}
+
+/* Azul sempre usa texto claro; texto escuro fica reservado para fundos claros. */
+.bg-primary,
+.btn-primary,
+.btn-primary *,
+.primary,
+button.primary,
+input.primary {
+  color: #fff !important;
+}
+
+.bg-primary .navbar-brand,
+.bg-primary .nav-link,
+.bg-primary .navbar-toggler {
+  color: #fff !important;
+}
+
+.btn-light,
+.btn-light * {
+  color: #111827 !important;
 }
 
 .btn-primary:hover,
@@ -1368,6 +1508,77 @@ button.primary:not(.btn)::before,
   white-space: nowrap;
 }
 
+/* Textos preenchidos pelos usuarios devem ocupar novas linhas sem sobrepor outros dados. */
+.table td.ticket-title,
+.table td.ticket-fields,
+.table td.wrap-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.table td.ticket-title {
+  min-width: 220px;
+  max-width: 320px;
+}
+.ticket-title-text {
+  display: block;
+  width: 280px;
+  max-width: 280px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+}
+.attachment-indicator {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--primary);
+  font-size: .9em;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.table td.ticket-fields {
+  min-width: 220px;
+  max-width: 300px;
+}
+.page-title > div:first-child,
+.detail-main,
+.detail-side,
+.notification-list article > div,
+.list-action > div,
+.profile-list li > div {
+  min-width: 0;
+}
+.metric-list li span,
+.notification-strip button,
+.notification-strip button strong,
+.profile-list strong,
+.profile-list span,
+.list-action span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.detail-title h1,
+.detail-title p,
+.preline,
+.comments p,
+.history p,
+.custom-data dd,
+.detail-summary dd,
+.audit-meta span,
+.notification-list strong,
+.notification-list p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.notification-list article {
+  align-items: flex-start;
+}
+.notification-list article > div {
+  flex: 1 1 auto;
+}
+
 .badge {
   border-radius: 999px;
   font-size: .72rem;
@@ -1426,4 +1637,560 @@ button.primary:not(.btn)::before,
 .ticket-card {
   border: 0;
   box-shadow: 0 .125rem .25rem rgba(15, 23, 42, .075);
+}
+
+/*
+ * Enterprise UI layer
+ *
+ * Esta camada é exclusivamente visual. As classes existentes permanecem para
+ * que rotas, formulários e scripts continuem funcionando sem alteração.
+ */
+:root {
+  --enterprise-bg: #f3f6fb;
+  --enterprise-surface: #ffffff;
+  --enterprise-surface-subtle: #f8fafc;
+  --enterprise-ink: #172033;
+  --enterprise-muted: #64748b;
+  --enterprise-line: #dbe3ef;
+  --enterprise-primary: #1d5fc4;
+  --enterprise-primary-dark: #164b9d;
+  --enterprise-focus: rgba(29, 95, 196, .22);
+  --enterprise-shadow: 0 8px 24px rgba(15, 23, 42, .07);
+  --enterprise-shadow-hover: 0 12px 30px rgba(15, 23, 42, .12);
+}
+
+html {
+  background: var(--enterprise-bg);
+}
+
+body.app-shell {
+  background: var(--enterprise-bg);
+  color: var(--enterprise-ink);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.app-shell a {
+  text-underline-offset: 2px;
+}
+
+body.app-shell :focus-visible {
+  outline: 3px solid var(--enterprise-focus);
+  outline-offset: 2px;
+}
+
+.app-navbar {
+  min-height: 68px;
+  background: var(--enterprise-primary) !important;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 10px !important;
+  box-shadow: 0 8px 18px rgba(29, 95, 196, .18) !important;
+}
+
+.app-navbar .navbar-brand {
+  letter-spacing: -.01em;
+  font-size: 1.1rem;
+}
+
+.app-navbar .navbar-nav {
+  gap: .15rem !important;
+}
+
+.app-navbar .nav-link {
+  border-radius: 7px;
+  color: rgba(255, 255, 255, .82) !important;
+  font-size: .84rem;
+  padding: .5rem .68rem !important;
+  transition: background-color .16s ease, color .16s ease;
+}
+
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link.active {
+  background: rgba(255, 255, 255, .14);
+  color: #fff !important;
+}
+
+.app-navbar .btn {
+  border-radius: 7px;
+  min-height: 34px;
+  padding-inline: .8rem;
+}
+
+.page {
+  width: min(1520px, calc(100% - 32px));
+  margin: 0 auto 40px;
+}
+
+.page-title {
+  align-items: flex-start;
+  margin: 1rem 0 1.25rem;
+}
+
+.page-title h1 {
+  color: var(--enterprise-ink);
+  font-size: clamp(1.45rem, 1.2rem + .45vw, 1.8rem);
+  font-weight: 750;
+  letter-spacing: -.025em;
+  margin-bottom: .35rem;
+}
+
+.page-title p {
+  color: var(--enterprise-muted);
+  font-size: .9rem;
+}
+
+.title-actions {
+  gap: .6rem;
+}
+
+.panel,
+.chart-panel,
+.kanban-filterbar {
+  background: var(--enterprise-surface);
+  border: 1px solid var(--enterprise-line) !important;
+  border-radius: 10px;
+  box-shadow: var(--enterprise-shadow);
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+}
+
+.panel:hover,
+.chart-panel:hover {
+  box-shadow: var(--enterprise-shadow-hover);
+}
+
+.panel-head {
+  border-bottom: 1px solid var(--enterprise-line);
+  margin: -1.25rem -1.25rem 1.25rem;
+  padding: .95rem 1.25rem;
+}
+
+.panel-head h2,
+.panel > h1:first-child,
+.panel > h2:first-child,
+.builder-head h2 {
+  color: var(--enterprise-ink);
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -.01em;
+}
+
+.panel-head h2::before,
+.panel > h1:first-child::before,
+.panel > h2:first-child::before,
+.builder-head h2::before {
+  color: var(--enterprise-primary);
+}
+
+.muted,
+.page-title p,
+.table .text-muted {
+  color: var(--enterprise-muted) !important;
+}
+
+.button,
+.small-button,
+button,
+input[type="submit"],
+.btn {
+  border-radius: 7px;
+  font-weight: 700;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.button:hover,
+.small-button:hover,
+button:hover,
+input[type="submit"]:hover,
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.button:not(.primary):not(.btn-primary),
+.small-button:not(.primary):not(.btn-primary) {
+  background: #fff;
+  border-color: var(--enterprise-line);
+  color: var(--enterprise-ink);
+}
+
+.primary,
+button.primary,
+input.primary,
+.button.primary,
+.btn-primary {
+  background: var(--enterprise-primary) !important;
+  border-color: var(--enterprise-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 10px rgba(29, 95, 196, .18);
+}
+
+.primary:hover,
+button.primary:hover,
+input.primary:hover,
+.button.primary:hover,
+.btn-primary:hover {
+  background: var(--enterprise-primary-dark) !important;
+  border-color: var(--enterprise-primary-dark) !important;
+}
+
+.btn-light,
+.btn-light * {
+  color: var(--enterprise-ink) !important;
+}
+
+label {
+  color: #52627a;
+  font-size: .76rem;
+  letter-spacing: .045em;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+select,
+textarea {
+  background: #fff;
+  border: 1px solid var(--enterprise-line);
+  border-radius: 7px;
+  min-height: 40px;
+  padding: .55rem .75rem;
+}
+
+textarea {
+  min-height: 104px;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):hover,
+select:hover,
+textarea:hover {
+  border-color: #a9bad2;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--enterprise-primary);
+  box-shadow: 0 0 0 .2rem var(--enterprise-focus);
+  outline: 0;
+}
+
+.filters,
+.quick-filters {
+  margin-bottom: 1rem;
+}
+
+.quick-filters {
+  gap: .5rem;
+}
+
+.quick-filters a {
+  min-height: 34px;
+  border-color: var(--enterprise-line);
+  color: #475569;
+  padding: .4rem .75rem;
+}
+
+.quick-filters a:hover,
+.quick-filters a.active {
+  background: #eaf2ff;
+  border-color: #8bb3ed;
+  color: var(--enterprise-primary-dark);
+}
+
+.filters.advanced {
+  gap: .65rem;
+  padding: .85rem;
+  border: 1px solid var(--enterprise-line);
+  border-radius: 10px;
+  background: var(--enterprise-surface-subtle);
+}
+
+.table-responsive {
+  border: 1px solid var(--enterprise-line);
+  border-radius: 9px;
+}
+
+.table {
+  --bs-table-bg: #fff;
+  --bs-table-hover-bg: #f7faff;
+  margin-bottom: 0 !important;
+}
+
+.table thead th {
+  background: #f5f7fb;
+  border-bottom: 1px solid var(--enterprise-line);
+  color: #53637b;
+  font-size: .7rem;
+  letter-spacing: .055em;
+  padding: .8rem .75rem;
+  vertical-align: middle;
+}
+
+.table tbody td {
+  border-color: #e8edf4;
+  color: var(--enterprise-ink);
+  font-size: .84rem;
+  padding: .75rem;
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Campos textuais sempre têm largura previsível e quebram linha. */
+.table td.ticket-title,
+.table td.ticket-fields,
+.table td.wrap-text {
+  max-width: none;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table td.ticket-title {
+  min-width: 260px;
+  width: 30%;
+}
+
+.ticket-title-text {
+  display: block;
+  width: min(380px, 34vw);
+  max-width: 100%;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table td.ticket-fields {
+  min-width: 220px;
+  max-width: 320px;
+  line-height: 1.45;
+}
+
+.table td.ticket-fields div + div {
+  margin-top: .25rem;
+}
+
+.attachment-indicator {
+  color: var(--enterprise-primary) !important;
+  font-size: .85em;
+}
+
+.badge,
+.due-badge,
+.priority-badge {
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .01em;
+  line-height: 1.2;
+}
+
+.status-aberta { background: #d9f5f8 !important; color: #0f6572 !important; }
+.status-em-andamento { background: #dce9ff !important; color: #1e4f9d !important; }
+.status-pausada { background: #fff0c2 !important; color: #805d09 !important; }
+.status-concluida { background: #d9f3e5 !important; color: #126b45 !important; }
+.status-cancelada { background: #e8edf3 !important; color: #526174 !important; }
+
+.due-ok { background: #d9f3e5 !important; color: #126b45 !important; }
+.due-paused { background: #e2e8ff !important; color: #4b4aa2 !important; }
+.due-today { background: #fff0c2 !important; color: #805d09 !important; }
+.due-overdue { background: #ffe0e5 !important; color: #a1273b !important; }
+.due-done,
+.due-none { background: #e8edf3 !important; color: #526174 !important; }
+
+.dashboard-metrics {
+  gap: .85rem;
+}
+
+.dashboard-metrics .metric-card {
+  align-items: flex-start;
+  background: #fff !important;
+  border: 1px solid var(--enterprise-line) !important;
+  border-left: 4px solid var(--enterprise-primary) !important;
+  border-radius: 10px;
+  color: var(--enterprise-ink) !important;
+  display: grid;
+  justify-items: start;
+  min-height: 104px;
+  padding: 1rem 1.05rem;
+  place-items: start;
+  text-align: left;
+  box-shadow: var(--enterprise-shadow);
+}
+
+.dashboard-metrics .metric-card:hover {
+  box-shadow: var(--enterprise-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.dashboard-metrics .metric-card span {
+  color: var(--enterprise-muted) !important;
+  font-size: .75rem;
+  letter-spacing: .04em;
+}
+
+.dashboard-metrics .metric-card strong {
+  color: var(--enterprise-ink) !important;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.dashboard-metrics .metric-card.danger { border-left-color: #c83b50 !important; }
+.dashboard-metrics .metric-card.info { border-left-color: #159bb2 !important; }
+.dashboard-metrics .metric-card.primary-fill { border-left-color: var(--enterprise-primary) !important; }
+.dashboard-metrics .metric-card.warning { border-left-color: #d79a00 !important; }
+.dashboard-metrics .metric-card.success { border-left-color: #148352 !important; }
+
+.live-badge {
+  background: #eaf2ff;
+  color: var(--enterprise-primary-dark);
+  font-size: .7rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.kanban-filterbar {
+  padding: 1rem;
+}
+
+.kanban-column {
+  border: 1px solid var(--enterprise-line) !important;
+  border-top: 4px solid var(--enterprise-primary) !important;
+  border-radius: 10px;
+  box-shadow: var(--enterprise-shadow);
+  padding: .85rem;
+}
+
+.kanban-column header {
+  border-bottom: 1px solid var(--enterprise-line);
+  margin-bottom: .85rem;
+  padding-bottom: .7rem;
+}
+
+.kanban-column header strong {
+  font-size: .82rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.kanban-count {
+  background: #e8eef8;
+  border-radius: 999px;
+  color: var(--enterprise-ink);
+  font-size: .72rem;
+  min-width: 24px;
+  padding: .2rem .45rem;
+  text-align: center;
+}
+
+.ticket-card {
+  border: 1px solid var(--enterprise-line) !important;
+  border-left: 3px solid transparent !important;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, .06);
+  padding: .9rem;
+  transition: box-shadow .16s ease, transform .16s ease;
+}
+
+.ticket-card:hover {
+  box-shadow: var(--enterprise-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.kanban-em-andamento .ticket-card { border-left-color: var(--enterprise-primary) !important; }
+.kanban-pausada .ticket-card { border-left-color: #d79a00 !important; }
+.kanban-concluida .ticket-card { border-left-color: #148352 !important; }
+.kanban-cancelada .ticket-card { border-left-color: #94a3b8 !important; }
+
+.ticket-card h2 {
+  font-size: .94rem;
+  line-height: 1.4;
+}
+
+.ticket-card .category-chip {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.action-panel,
+.timeline-panel,
+.comments-panel,
+.detail-summary-panel {
+  border-top-width: 3px;
+}
+
+.detail-summary-panel .preline,
+.attachments-panel,
+.custom-data,
+.dynamic-fields,
+.field-builder,
+.notice,
+.json-box {
+  background: var(--enterprise-surface-subtle);
+  border: 1px solid var(--enterprise-line);
+  border-radius: 8px;
+}
+
+.attachment-item,
+.notification-list article {
+  border-color: var(--enterprise-line);
+  border-radius: 8px;
+}
+
+.modal-content {
+  border: 1px solid var(--enterprise-line);
+  border-radius: 10px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, .2);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--enterprise-line);
+}
+
+.alert {
+  border-radius: 8px;
+}
+
+@media (max-width: 840px) {
+  .page {
+    width: min(100% - 24px, 100%);
+  }
+
+  .app-navbar .navbar-collapse {
+    margin-top: .75rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(255, 255, 255, .16);
+  }
+
+  .ticket-title-text {
+    width: min(100%, 360px);
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    width: calc(100% - 20px);
+  }
+
+  .panel,
+  .chart-panel {
+    padding: 1rem;
+  }
+
+  .panel-head {
+    margin: -1rem -1rem 1rem;
+    padding: .85rem 1rem;
+  }
+
+  .table td.ticket-title {
+    min-width: 220px;
+  }
+
+  .ticket-title-text {
+    width: min(250px, 65vw);
+  }
 }
