@@ -1,14 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="page-title">
+<section class="page-title dashboard-page-title">
   <div>
     <h1>Painel de controle</h1>
     <p>Fila operacional, SLA e andamento das solicitacoes.</p>
-  </div>
-  <div class="title-actions">
-    <a class="button" href="{{ url_for('tickets.kanban') }}">Kanban</a>
-    <a class="button" href="{{ url_for('tickets.export_csv') }}">Exportar CSV</a>
-    <a class="primary button" href="{{ url_for('tickets.create_ticket') }}">Nova solicitacao</a>
   </div>
 </section>
 

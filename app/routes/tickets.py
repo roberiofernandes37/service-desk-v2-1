@@ -50,7 +50,7 @@ def configure_ticket_form(form, include_category_id=None):
         for category in Category.query.order_by(Category.name).all()
         if category.active or category.id == include_category_id
     ]
-    form.category_id.choices = [(category.id, category.name) for category in categories]
+    form.category_id.choices = [(0, "Selecione uma categoria")] + [(category.id, category.name) for category in categories]
     form.branch_id.choices = [(0, "Geral")] + [(b.id, b.name) for b in Branch.query.filter_by(active=True).order_by(Branch.name)]
 
 
@@ -356,7 +356,7 @@ def export_csv():
 def create_ticket():
     form = TicketForm()
     configure_ticket_form(form)
-    if not form.category_id.choices:
+    if len(form.category_id.choices) <= 1:
         flash("Cadastre ao menos uma categoria ativa antes de abrir solicitacoes.", "warning")
         return redirect(url_for("admin.settings"))
 

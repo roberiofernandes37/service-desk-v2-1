@@ -5,11 +5,6 @@
     <h1>Kanban</h1>
     <p>Fila visual por status, ordenada por prazo SLA.</p>
   </div>
-  <div class="title-actions">
-    <a class="button" href="{{ url_for('tickets.list_tickets', q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Tabela</a>
-    <a class="button" href="{{ url_for('tickets.export_csv', q=filters.q, status=filters.status, priority=filters.priority, due_state=filters.due_state, sort=filters.sort, category_id=filters.category_id or '', branch_id=filters.branch_id if filters.branch_id is not none else '', requester_id=filters.requester_id or '', assignee_id=filters.assignee_id if filters.assignee_id is not none else '') }}">Exportar CSV</a>
-    <a class="primary button" href="{{ url_for('tickets.create_ticket') }}">Nova</a>
-  </div>
 </section>
 
 <section class="kanban-filterbar">
@@ -66,7 +61,10 @@
         <option value="{{ assignee.id }}" {% if filters.assignee_id == assignee.id %}selected{% endif %}>{{ assignee.name }}</option>
       {% endfor %}
     </select>
-    <button type="submit" class="primary">Filtrar</button>
+    <div class="filter-actions">
+      <button type="submit" class="filter-submit primary"><i class="fa-solid fa-filter me-2" aria-hidden="true"></i>Filtrar</button>
+      <a class="filter-clear" href="{{ url_for('tickets.kanban') }}"><i class="fa-solid fa-rotate-left me-2" aria-hidden="true"></i>Limpar filtros</a>
+    </div>
   </form>
 </section>
 
