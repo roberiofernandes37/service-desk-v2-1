@@ -33,7 +33,14 @@ def backup_root():
 
 
 def run_command(command):
-    return subprocess.run(command, check=True, capture_output=True, text=True)
+    try:
+        return subprocess.run(command, check=True, capture_output=True, text=True)
+    except subprocess.CalledProcessError as exc:
+        details = (exc.stderr or exc.stdout or "").strip()
+        command_name = command[0] if command else "comando externo"
+        if details:
+            raise RuntimeError(f"{command_name} falhou (código {exc.returncode}): {details}") from exc
+        raise RuntimeError(f"{command_name} falhou (código {exc.returncode}).") from exc
 
 
 def database_url():

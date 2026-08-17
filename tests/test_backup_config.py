@@ -1,4 +1,5 @@
 import json
+import sys
 import tarfile
 
 import pytest
@@ -86,3 +87,10 @@ def test_backup_persists_file_identity_before_dump(app, tmp_path, monkeypatch):
         assert observed["file_name"] == run.file_name
         assert observed["file_path"] == run.file_path
         assert run.status == "success"
+
+
+def test_backup_command_exposes_stderr():
+    with pytest.raises(RuntimeError, match="falhou.*detalhe do erro"):
+        backup_service.run_command(
+            [sys.executable, "-c", "import sys; sys.stderr.write('detalhe do erro'); sys.exit(3)"]
+        )
