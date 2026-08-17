@@ -1741,6 +1741,16 @@ body.app-shell :focus-visible {
   font-size: .9rem;
 }
 
+/* A faixa de detalhes usa fundo primário; preserve contraste no título e no resumo. */
+.page-title.detail-title h1 {
+  color: #fff !important;
+}
+
+.page-title.detail-title p {
+  color: #eaf2ff !important;
+  font-weight: 600;
+}
+
 .title-actions {
   gap: .6rem;
 }
@@ -2606,11 +2616,14 @@ textarea:focus {
 
 .sidebar-logout-form {
   margin: 0;
+  width: 100%;
 }
 
 .sidebar-logout-form .sidebar-utility-link {
+  appearance: none;
   cursor: pointer;
   font: inherit;
+  text-align: left;
 }
 
 .sidebar-notification-count {

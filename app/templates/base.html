@@ -48,17 +48,13 @@
         <div class="sidebar-utilities">
           <a class="sidebar-utility-link" href="{{ url_for('main.dashboard') }}" onclick="return goBackSafely(event);" title="Voltar"><span class="sidebar-nav-icon"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></span><span class="sidebar-nav-label">Voltar</span></a>
           <a class="sidebar-utility-link position-relative" href="{{ url_for('main.notifications') }}" title="Avisos"><span class="sidebar-nav-icon"><i class="fa-solid fa-bell" aria-hidden="true"></i></span><span class="sidebar-nav-label">Avisos</span>{% if unread_notification_count %}<span class="sidebar-notification-count">{{ unread_notification_count }}</span>{% endif %}</a>
-          <a class="sidebar-utility-link" href="{{ url_for('auth.profile') }}" title="Perfil"><span class="sidebar-nav-icon"><i class="fa-solid fa-user" aria-hidden="true"></i></span><span class="sidebar-nav-label">Perfil</span></a>
+          <a class="sidebar-utility-link" href="{{ url_for('auth.profile') }}" title="Perfil de {{ current_user.name }}"><span class="sidebar-nav-icon"><i class="fa-solid fa-user" aria-hidden="true"></i></span><span class="sidebar-nav-label">{{ current_user.name }}</span></a>
           <form action="{{ url_for('auth.logout') }}" method="post" class="sidebar-logout-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="sidebar-utility-link" title="Sair"><span class="sidebar-nav-icon"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i></span><span class="sidebar-nav-label">Sair</span></button>
           </form>
         </div>
 
-        <div class="sidebar-user-summary">
-          <span class="sidebar-user-avatar">{{ current_user.name[:1]|upper }}</span>
-          <span class="sidebar-user-copy"><strong>{{ current_user.name }}</strong><small>{{ current_user.profile.name if current_user.profile else 'Usuário' }}</small></span>
-        </div>
       </aside>
     </header>
     <button class="sidebar-mobile-toggle" type="button" onclick="toggleSidebarMobile()" aria-label="Abrir menu" title="Abrir menu"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
