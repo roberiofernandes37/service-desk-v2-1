@@ -51,7 +51,7 @@ docker compose exec web flask backup-restore --id ID --confirm RESTAURAR</pre>
     <span class="muted">Mantendo até {{ config.max_backup_count }} backup{{ "" if config.max_backup_count == 1 else "s" }}</span>
   </div>
   <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table backups-table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
           <th class="px-4">Data</th>

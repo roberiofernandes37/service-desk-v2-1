@@ -2188,50 +2188,50 @@ textarea:focus {
   scrollbar-width: thin;
 }
 
-.table {
+.tickets-table {
   table-layout: fixed;
   min-width: 1120px;
 }
 
-.table th:nth-child(1),
-.table td:nth-child(1) { width: 58px; }
+.tickets-table th:nth-child(1),
+.tickets-table td:nth-child(1) { width: 58px; }
 
-.table th:nth-child(2),
-.table td:nth-child(2) { width: 220px; }
+.tickets-table th:nth-child(2),
+.tickets-table td:nth-child(2) { width: 220px; }
 
-.table th:nth-child(3),
-.table td:nth-child(3) { width: 112px; }
+.tickets-table th:nth-child(3),
+.tickets-table td:nth-child(3) { width: 112px; }
 
-.table th:nth-child(4),
-.table td:nth-child(4) { width: 105px; }
+.tickets-table th:nth-child(4),
+.tickets-table td:nth-child(4) { width: 105px; }
 
-.table th:nth-child(5),
-.table td:nth-child(5),
-.table th:nth-child(6),
-.table td:nth-child(6) { width: 125px; }
+.tickets-table th:nth-child(5),
+.tickets-table td:nth-child(5),
+.tickets-table th:nth-child(6),
+.tickets-table td:nth-child(6) { width: 125px; }
 
-.table th:nth-child(7),
-.table td:nth-child(7) { width: 200px; }
+.tickets-table th:nth-child(7),
+.tickets-table td:nth-child(7) { width: 200px; }
 
-.table th:nth-child(8),
-.table td:nth-child(8) { width: 150px; }
+.tickets-table th:nth-child(8),
+.tickets-table td:nth-child(8) { width: 150px; }
 
-.table th:nth-child(9),
-.table td:nth-child(9) { width: 92px; }
+.tickets-table th:nth-child(9),
+.tickets-table td:nth-child(9) { width: 92px; }
 
-.table td.ticket-title {
+.tickets-table td.ticket-title {
   min-width: 0;
   max-width: 220px;
   width: 220px;
 }
 
-.ticket-title-text {
+.tickets-table .ticket-title-text {
   width: 205px;
   max-width: 100%;
   line-height: 1.38;
 }
 
-.table td.ticket-fields {
+.tickets-table td.ticket-fields {
   min-width: 0;
   max-width: 200px;
 }
@@ -2870,4 +2870,73 @@ input[type="submit"],
 .sidebar-nav .nav-link,
 .sidebar-utility-link {
   font-size: .82rem;
+}
+
+/* Tabelas administrativas: distribuição natural e quebra segura dos textos. */
+.table:not(.tickets-table) {
+  table-layout: auto;
+  min-width: 0;
+}
+
+.table:not(.tickets-table) th,
+.table:not(.tickets-table) td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table:not(.tickets-table) td:last-child {
+  white-space: nowrap;
+}
+
+.audit-table td:first-child,
+.backups-table td:first-child,
+.errors-table td:first-child {
+  white-space: nowrap;
+}
+
+.table:not(.tickets-table) td.ticket-title {
+  min-width: 0;
+  max-width: none;
+  width: auto;
+}
+
+.table:not(.tickets-table) .ticket-title-text {
+  width: auto;
+  max-width: none;
+  line-height: 1.35;
+}
+
+/* Backup: reserva espaço proporcional para data, arquivo, mensagem e ações. */
+.backups-table {
+  table-layout: fixed;
+  min-width: 1150px;
+}
+
+.backups-table th:nth-child(1),
+.backups-table td:nth-child(1) { width: 12%; }
+
+.backups-table th:nth-child(2),
+.backups-table td:nth-child(2) { width: 9%; }
+
+.backups-table th:nth-child(3),
+.backups-table td:nth-child(3) { width: 9%; }
+
+.backups-table th:nth-child(4),
+.backups-table td:nth-child(4) { width: 18%; }
+
+.backups-table th:nth-child(5),
+.backups-table td:nth-child(5) { width: 8%; }
+
+.backups-table th:nth-child(6),
+.backups-table td:nth-child(6) { width: 10%; }
+
+.backups-table th:nth-child(7),
+.backups-table td:nth-child(7) { width: 18%; }
+
+.backups-table th:nth-child(8),
+.backups-table td:nth-child(8) { width: 16%; }
+
+.backups-table .row-actions {
+  justify-content: flex-start;
 }
