@@ -6,9 +6,10 @@ import pytest
 from app import create_app
 from app.config import TestingConfig
 from app.extensions import db
-from app.models import BackupConfig
+from app.models import BackupConfig, BackupRun
 from app.routes.admin import backup_status_label, format_bytes, schedule_times_valid
-from app.services.backup import get_backup_config, validate_backup_file
+from app.services import backup as backup_service
+from app.services.backup import create_backup, get_backup_config, validate_backup_file
 
 
 @pytest.fixture()
@@ -66,3 +67,22 @@ def test_backup_file_validation(tmp_path):
 
     with pytest.raises(RuntimeError, match="database.sql"):
         validate_backup_file(invalid_path)
+
+
+def test_backup_persists_file_identity_before_dump(app, tmp_path, monkeypatch):
+    with app.app_context():
+        app.config["BACKUP_ROOT"] = str(tmp_path / "backups")
+        observed = {}
+
+        def fake_dump(target_sql):
+            current = BackupRun.query.order_by(BackupRun.id.desc()).first()
+            observed["file_name"] = current.file_name
+            observed["file_path"] = current.file_path
+            target_sql.write_text("select 1;", encoding="utf-8")
+
+        monkeypatch.setattr(backup_service, "dump_database", fake_dump)
+        run = create_backup(include_uploads=False, include_logs=False)
+
+        assert observed["file_name"] == run.file_name
+        assert observed["file_path"] == run.file_path
+        assert run.status == "success"

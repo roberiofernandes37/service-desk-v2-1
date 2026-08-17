@@ -71,7 +71,16 @@ def dump_database(target_sql):
 def restore_database(source_sql):
     uri = database_url()
     if uri.startswith("postgresql"):
-        run_command(["psql", f"--dbname={uri}", f"--file={source_sql}"])
+        run_command(
+            [
+                "psql",
+                f"--dbname={uri}",
+                "--set=ON_ERROR_STOP=1",
+                "--command",
+                "SET lock_timeout = '30s'; SET statement_timeout = '30min';",
+                f"--file={source_sql}",
+            ]
+        )
         return
     if uri.startswith("sqlite:///"):
         sqlite_path = uri.replace("sqlite:///", "", 1)
@@ -107,6 +116,11 @@ def create_backup(user_id=None, include_uploads=True, include_logs=True, mode="m
 
     file_name = f"service_desk_v2_1_backup_{utc_stamp()}.tar.gz"
     output_path = root / file_name
+    # Grave a identidade do arquivo antes do dump. Assim, ao restaurar o
+    # banco, o próprio registro do backup não perde nome nem caminho.
+    run.file_name = file_name
+    run.file_path = str(output_path)
+    db.session.commit()
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -195,19 +209,14 @@ def validate_backup_run(backup_run):
 def restore_backup(backup_run, user_id=None):
     source = Path(backup_run.file_path or "")
     validate_backup_file(source)
-    run = BackupRun(
-        user_id=user_id,
-        action="restore",
-        status="running",
-        file_name=backup_run.file_name,
-        file_path=str(source),
-        include_uploads=backup_run.include_uploads,
-        include_logs=backup_run.include_logs,
-        message="Restauração iniciada.",
-    )
-    db.session.add(run)
-    db.session.commit()
-    run_id = run.id
+    source_id = backup_run.id
+    source_file_name = backup_run.file_name or source.name
+    source_include_uploads = backup_run.include_uploads
+    source_include_logs = backup_run.include_logs
+
+    # O dump/restauro usa uma conexão externa (pg_dump/psql). Libere a sessão
+    # do Flask antes disso para não manter locks de consultas anteriores.
+    db.session.remove()
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
@@ -220,29 +229,61 @@ def restore_backup(backup_run, user_id=None):
             logs_path = temp_path / "logs"
             if logs_path.exists():
                 shutil.copytree(logs_path, current_app.config["LOG_ROOT"], dirs_exist_ok=True)
-        try:
-            db.session.rollback()
-            record = db.session.get(BackupRun, run_id)
-            if record:
-                record.status = "success"
-                record.message = "Restauração concluída."
-                record.finished_at = datetime.now(timezone.utc)
-                db.session.commit()
-                return record
-        except Exception:
-            db.session.rollback()
-        run.status = "success"
-        run.message = "Restauração concluída."
-        run.finished_at = datetime.now(timezone.utc)
+
+        # O banco restaurado não contém o registro da restauração atual.
+        # Reabra uma sessão nova e registre o resultado após o psql terminar.
+        db.session.remove()
+        restored_source = db.session.get(BackupRun, source_id) if source_id else None
+        if restored_source:
+            restored_source.status = "success"
+            restored_source.file_name = source_file_name
+            restored_source.file_path = str(source)
+            restored_source.size_bytes = source.stat().st_size
+            restored_source.message = "Backup validado após restauração."
+            restored_source.error_message = None
+            restored_source.finished_at = datetime.now(timezone.utc)
+
+        for pending in BackupRun.query.filter(BackupRun.status == "running").all():
+            if restored_source and pending.id == restored_source.id:
+                continue
+            pending.status = "failed"
+            pending.error_message = "Operação interrompida pela restauração."
+            pending.finished_at = datetime.now(timezone.utc)
+
+        run = BackupRun(
+            user_id=user_id,
+            action="restore",
+            status="success",
+            file_name=source_file_name,
+            file_path=str(source),
+            size_bytes=source.stat().st_size,
+            include_uploads=source_include_uploads,
+            include_logs=source_include_logs,
+            message="Restauração concluída.",
+            finished_at=datetime.now(timezone.utc),
+        )
+        db.session.add(run)
+        db.session.commit()
         return run
     except Exception as exc:
-        db.session.rollback()
-        record = db.session.get(BackupRun, run_id)
-        if record:
-            record.status = "failed"
-            record.error_message = str(exc)
-            record.finished_at = datetime.now(timezone.utc)
+        db.session.remove()
+        failed_run = BackupRun(
+            user_id=user_id,
+            action="restore",
+            status="failed",
+            file_name=source_file_name,
+            file_path=str(source),
+            include_uploads=source_include_uploads,
+            include_logs=source_include_logs,
+            message="Restauração falhou.",
+            error_message=str(exc),
+            finished_at=datetime.now(timezone.utc),
+        )
+        db.session.add(failed_run)
+        try:
             db.session.commit()
+        except Exception:
+            db.session.rollback()
         raise
 
 
