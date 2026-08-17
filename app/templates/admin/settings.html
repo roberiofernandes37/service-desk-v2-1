@@ -10,6 +10,19 @@
   </div>
 </section>
 
+<section class="panel timezone-settings-panel">
+  <div class="panel-head">
+    <h2>Preferências regionais</h2>
+    <span class="muted">Atual: {{ system_config.timezone }}</span>
+  </div>
+  <p class="muted">Escolha o fuso usado para exibir datas, horários, histórico, notificações e regras de “vence hoje”. Os dados continuam gravados em UTC.</p>
+  <form method="post" class="timezone-settings-form">
+    {{ timezone_form.hidden_tag() }}
+    <label>{{ timezone_form.timezone.label }}{{ timezone_form.timezone() }}</label>
+    <button type="submit" class="btn btn-primary fw-bold shadow-sm">{{ timezone_form.submit.label.text }}</button>
+  </form>
+</section>
+
 <div class="two-col">
   <section class="panel">
     <h2>Nova categoria</h2>

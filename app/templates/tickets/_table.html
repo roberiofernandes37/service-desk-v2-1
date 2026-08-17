@@ -41,7 +41,7 @@
             {% endif %}
           </td>
           <td>
-            <span>{{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
+            <span>{{ format_datetime(ticket.due_at, "%d/%m/%Y") }}</span>
             <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
           </td>
           <td class="px-4"><a class="btn btn-sm btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}"><i class="fa-solid fa-folder-open me-2"></i>Abrir</a></td>

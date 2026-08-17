@@ -125,7 +125,7 @@
               {% elif status_name == 'Concluida' %}
                 <span class="completed-mark"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Resolvida</span>
               {% else %}
-                <span class="kanban-due"><i class="fa-solid fa-clock" aria-hidden="true"></i>SLA: {{ ticket.due_at.strftime('%d/%m/%Y') }}</span>
+                <span class="kanban-due"><i class="fa-solid fa-clock" aria-hidden="true"></i>SLA: {{ format_datetime(ticket.due_at, "%d/%m/%Y") }}</span>
                 <span class="due-badge due-{{ sla.key }}">{{ sla.label }}</span>
               {% endif %}
             </div>

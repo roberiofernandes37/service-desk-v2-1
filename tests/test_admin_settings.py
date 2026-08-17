@@ -3,7 +3,7 @@ import pytest
 from app import create_app
 from app.config import TestingConfig
 from app.extensions import db
-from app.models import AccessProfile, Branch, Category, User
+from app.models import AccessProfile, Branch, Category, SystemConfig, User
 from app.routes.admin import branch_name_exists, category_name_exists
 
 
@@ -78,3 +78,34 @@ def test_settings_persists_category_submitted_from_settings_form(app):
         assert [(field.name, field.field_type, field.required) for field in category.fields] == [
             ("CENTRO DE CUSTO", "text", True)
         ]
+
+
+def test_settings_persists_system_timezone(app):
+    with app.app_context():
+        profile = AccessProfile(name="Administrador", can_manage_settings=True)
+        admin = User(
+            name="Admin",
+            email="timezone@example.com",
+            password_hash="hash",
+            profile=profile,
+        )
+        db.session.add(admin)
+        db.session.commit()
+        admin_id = admin.id
+
+    client = app.test_client()
+    with client.session_transaction() as session:
+        session["_user_id"] = str(admin_id)
+        session["_fresh"] = True
+
+    response = client.post(
+        "/admin/parametros",
+        data={
+            "timezone-timezone": "America/Manaus",
+            "timezone-submit": "Salvar fuso horário",
+        },
+    )
+
+    assert response.status_code == 302
+    with app.app_context():
+        assert SystemConfig.query.one().timezone == "America/Manaus"

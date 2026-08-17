@@ -12,7 +12,7 @@
 
 <section class="panel">
   <div class="audit-meta">
-    <div><strong>Data</strong><span>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</span></div>
+    <div><strong>Data</strong><span>{{ format_datetime(log.created_at, "%d/%m/%Y %H:%M:%S") }}</span></div>
     <div><strong>Usuário</strong><span>{{ log.user.name if log.user else "-" }}</span></div>
     <div><strong>Entidade</strong><span>{{ log.entity }}</span></div>
     <div><strong>ID</strong><span>{{ log.entity_id if log.entity_id is not none else "-" }}</span></div>

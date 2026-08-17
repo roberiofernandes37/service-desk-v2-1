@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from .timezone import to_local
+
 FINAL_STATUSES = {"Concluida", "Cancelada"}
 
 
@@ -11,7 +13,7 @@ def normalize_datetime(value):
     return value
 
 
-def sla_state(ticket, now=None):
+def sla_state(ticket, now=None, timezone_name=None):
     if not ticket or not ticket.due_at:
         return {"key": "none", "label": "-", "is_active": False}
     if ticket.status in FINAL_STATUSES:
@@ -23,7 +25,7 @@ def sla_state(ticket, now=None):
     due_at = normalize_datetime(ticket.due_at)
     if due_at < now:
         return {"key": "overdue", "label": "Atrasada", "is_active": True}
-    if due_at.date() == now.date():
+    if to_local(due_at, timezone_name).date() == to_local(now, timezone_name).date():
         return {"key": "today", "label": "Vence hoje", "is_active": True}
     return {"key": "ok", "label": "No prazo", "is_active": True}
 

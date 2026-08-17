@@ -1,7 +1,7 @@
 import csv
 import io
 import json
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, timezone
 
 from flask import Blueprint, abort, current_app, flash, make_response, redirect, render_template, request, send_file, url_for
 from flask_login import current_user, login_required
@@ -9,13 +9,14 @@ from sqlalchemy import func, or_
 from werkzeug.security import generate_password_hash
 
 from ..extensions import db
-from ..forms import AccessProfileForm, AdminPasswordResetForm, BackupRestoreForm, BackupSettingsForm, BranchForm, CategoryForm, MailSettingsForm, UserEditForm, UserForm
+from ..forms import AccessProfileForm, AdminPasswordResetForm, BackupRestoreForm, BackupSettingsForm, BranchForm, CategoryForm, MailSettingsForm, TimezoneSettingsForm, UserEditForm, UserForm
 from ..models import AccessProfile, AuditLog, BackupConfig, BackupRun, Branch, Category, DynamicField, SystemErrorLog, Ticket, User
 from ..security import permission_required
 from ..services.audit import audit
 from ..services.backup import create_backup, get_backup_config, restore_backup, validate_backup_run
 from ..services.ticket_workflow import CANCELED, DONE
 from ..services.mail_service import load_mail_config, normalize_mail_config, save_mail_config, test_email_connection
+from ..services.timezone import format_datetime, get_system_config, local_day_bounds_utc, timezone_choices, validate_timezone
 
 bp = Blueprint("admin", __name__)
 AUDIT_PER_PAGE = 50
@@ -64,7 +65,7 @@ def build_audit_csv(rows):
         writer.writerow(
             [
                 log.id,
-                log.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+                format_datetime(log.created_at, "%d/%m/%Y %H:%M:%S"),
                 log.user.name if log.user else "",
                 log.entity,
                 log.entity_id if log.entity_id is not None else "",
@@ -86,7 +87,7 @@ def build_error_csv(rows):
         writer.writerow(
             [
                 log.id,
-                log.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+                format_datetime(log.created_at, "%d/%m/%Y %H:%M:%S"),
                 "Sim" if log.resolved else "Não",
                 log.user_name or (log.user.name if log.user else ""),
                 log.error_type,
@@ -221,8 +222,7 @@ def percentage(part, total):
 
 def build_report_metrics(now=None):
     now = now or datetime.now(timezone.utc)
-    today_start = datetime.combine(now.date(), time.min, tzinfo=timezone.utc)
-    tomorrow_start = today_start + timedelta(days=1)
+    today_start, tomorrow_start = local_day_bounds_utc(now)
     active_filter = Ticket.status.notin_([DONE, CANCELED])
 
     total = Ticket.query.count()
@@ -455,6 +455,23 @@ def toggle_user(user_id):
 def settings():
     category_form = CategoryForm(prefix="category")
     branch_form = BranchForm(prefix="branch")
+    system_config = get_system_config()
+    timezone_form = TimezoneSettingsForm(prefix="timezone")
+    timezone_form.timezone.choices = timezone_choices()
+    if request.method == "GET":
+        timezone_form.timezone.data = system_config.timezone
+
+    if timezone_form.submit.data and timezone_form.validate_on_submit():
+        try:
+            timezone_name = validate_timezone(timezone_form.timezone.data)
+            system_config.timezone = timezone_name
+            audit("SystemConfig", system_config.id, "timezone_updated", after={"timezone": timezone_name})
+            db.session.commit()
+            flash("Fuso horário do sistema atualizado.", "success")
+            return redirect(url_for("admin.settings"))
+        except ValueError as exc:
+            db.session.rollback()
+            flash(str(exc), "danger")
 
     if category_form.submit.data and category_form.validate_on_submit():
         category_name = category_form.name.data.strip().upper()
@@ -504,6 +521,8 @@ def settings():
         "admin/settings.html",
         category_form=category_form,
         branch_form=branch_form,
+        timezone_form=timezone_form,
+        system_config=system_config,
         categories=Category.query.order_by(Category.name).all(),
         branches=Branch.query.order_by(Branch.name).all(),
     )
@@ -804,7 +823,7 @@ def export_audit_csv():
     rows = apply_audit_filters(AuditLog.query, filters).order_by(AuditLog.created_at.desc()).limit(5000).all()
     response = make_response(build_audit_csv(rows))
     response.headers["Content-Type"] = "text/csv; charset=utf-8-sig"
-    response.headers["Content-Disposition"] = f"attachment; filename=auditoria_service_desk_v2_1_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename=auditoria_service_desk_v2_1_{format_datetime(datetime.now(timezone.utc), '%Y%m%d_%H%M%S')}.csv"
     return response
 
 
@@ -833,7 +852,7 @@ def export_error_csv():
     rows = apply_error_filters(SystemErrorLog.query, filters).order_by(SystemErrorLog.created_at.desc()).limit(5000).all()
     response = make_response(build_error_csv(rows))
     response.headers["Content-Type"] = "text/csv; charset=utf-8-sig"
-    response.headers["Content-Disposition"] = f"attachment; filename=erros_service_desk_v2_1_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename=erros_service_desk_v2_1_{format_datetime(datetime.now(timezone.utc), '%Y%m%d_%H%M%S')}.csv"
     return response
 
 

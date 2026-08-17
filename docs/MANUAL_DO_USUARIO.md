@@ -402,7 +402,14 @@ Em **Parâmetros**, o administrador pode:
 - criar campos dinâmicos de texto, número ou data;
 - definir campos obrigatórios da categoria;
 - criar, editar, ativar e desativar filiais;
+- escolher o fuso horário usado pelo sistema;
 - abrir a configuração de e-mail.
+
+#### Fuso horário do sistema
+
+Em **Preferências regionais**, selecione o fuso da operação, por exemplo **Fortaleza (UTC−03:00)**. A configuração vale para todos os usuários e afeta a exibição das datas e horas, o histórico, as notificações, o Kanban, os relatórios, os filtros de **vence hoje** e o cálculo da data final do SLA.
+
+O banco de dados continua armazenando os instantes em UTC para manter consistência e facilitar backups, integrações e auditoria. Portanto, não é necessário alterar o relógio do banco. Se a empresa mudar de localidade ou operar em outro fuso, atualize esta opção antes de cadastrar novas demandas com prazo.
 
 Desativar uma categoria impede novas solicitações nessa categoria, mas não deve apagar o histórico das demandas já registradas.
 

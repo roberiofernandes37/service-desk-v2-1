@@ -13,11 +13,12 @@ from werkzeug.security import generate_password_hash
 
 from .config import load_config
 from .extensions import csrf, db, login_manager, mail, migrate
-from .models import AccessProfile, BackupRun, Category, Notification, SystemErrorLog, Ticket, TicketAttachment, User
+from .models import AccessProfile, BackupRun, Category, Notification, SystemConfig, SystemErrorLog, Ticket, TicketAttachment, User
 from .services.backup import create_backup, get_backup_config, restore_backup, validate_backup_run
 from .services.error_logging import ERROR_LOG_FILENAME
 from .services.sla import format_duration, sla_state
 from .services.ticket_workflow import active_seconds
+from .services.timezone import format_datetime as format_local_datetime, get_timezone_name
 from .services.mail_service import apply_mail_config
 
 
@@ -137,6 +138,8 @@ def register_commands(app):
         db.create_all()
         ensure_ticket_workflow_columns()
         migrate_legacy_ticket_attachments()
+        if not SystemConfig.query.first():
+            db.session.add(SystemConfig())
         if not AccessProfile.query.filter_by(name="Administrador").first():
             db.session.add(
                 AccessProfile(
@@ -249,7 +252,7 @@ def register_commands(app):
                 writer.writerow(
                     [
                         row.id,
-                        row.created_at.strftime("%d/%m/%Y %H:%M:%S"),
+                        format_local_datetime(row.created_at, "%d/%m/%Y %H:%M:%S"),
                         "Sim" if row.resolved else "Nao",
                         row.user_name or (row.user.name if row.user else ""),
                         row.error_type,
@@ -361,6 +364,11 @@ def format_error_line(item):
 def register_template_context(app):
     @app.context_processor
     def inject_notifications():
+        timezone_name = get_timezone_name()
+
+        def format_datetime(value, fmt="%d/%m/%Y %H:%M"):
+            return format_local_datetime(value, fmt, timezone_name)
+
         if not current_user.is_authenticated:
             return {
                 "unread_notifications": [],
@@ -368,6 +376,8 @@ def register_template_context(app):
                 "sla_state": sla_state,
                 "format_duration": format_duration,
                 "active_seconds": active_seconds,
+                "format_datetime": format_datetime,
+                "system_timezone": timezone_name,
             }
         try:
             unread = (
@@ -385,6 +395,8 @@ def register_template_context(app):
             "sla_state": sla_state,
             "format_duration": format_duration,
             "active_seconds": active_seconds,
+            "format_datetime": format_datetime,
+            "system_timezone": timezone_name,
         }
 
 

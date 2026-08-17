@@ -2940,3 +2940,20 @@ input[type="submit"],
 .backups-table .row-actions {
   justify-content: flex-start;
 }
+
+.timezone-settings-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: .75rem;
+}
+
+.timezone-settings-form label {
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .timezone-settings-form {
+    grid-template-columns: 1fr;
+  }
+}

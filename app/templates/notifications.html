@@ -18,7 +18,7 @@
         <div>
           <strong>{{ notification.title }}</strong>
           <p>{{ notification.message }}</p>
-          <span>{{ notification.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+          <span>{{ format_datetime(notification.created_at) }}</span>
         </div>
         <form method="post" action="{{ url_for('main.read_notification', notification_id=notification.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

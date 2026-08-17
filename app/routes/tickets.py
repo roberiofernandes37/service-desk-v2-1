@@ -1,7 +1,7 @@
 import csv
 import io
 import json
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, abort, flash, make_response, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -17,6 +17,7 @@ from ..services.error_logging import log_exception
 from ..services.notifications import notify_many, send_event_emails
 from ..services.sla import format_duration, sla_state
 from ..services.ticket_workflow import active_seconds, apply_action
+from ..services.timezone import format_datetime, local_date_end_as_utc, local_day_bounds_utc, to_local
 from ..services.uploads import save_uploads, send_protected_upload
 
 bp = Blueprint("tickets", __name__)
@@ -154,8 +155,7 @@ def parse_int_filter(value):
 
 def day_bounds(now=None):
     now = now or datetime.now(timezone.utc)
-    today_start = datetime.combine(now.date(), time.min, tzinfo=timezone.utc)
-    tomorrow_start = today_start + timedelta(days=1)
+    today_start, tomorrow_start = local_day_bounds_utc(now)
     return now, today_start, tomorrow_start
 
 
@@ -275,9 +275,9 @@ def build_ticket_csv(rows):
                 ticket.assignee.name if ticket.assignee else "",
                 ticket.category.name if ticket.category else "",
                 ticket.branch.name if ticket.branch else "Geral",
-                ticket.due_at.strftime("%d/%m/%Y") if ticket.due_at else "",
-                ticket.created_at.strftime("%d/%m/%Y %H:%M") if ticket.created_at else "",
-                ticket.updated_at.strftime("%d/%m/%Y %H:%M") if ticket.updated_at else "",
+                format_datetime(ticket.due_at, "%d/%m/%Y"),
+                format_datetime(ticket.created_at),
+                format_datetime(ticket.updated_at),
                 format_duration(ticket.total_paused_seconds),
                 json.dumps(ticket.custom_data or {}, ensure_ascii=False),
             ]
@@ -347,7 +347,7 @@ def export_csv():
     db.session.commit()
     response = make_response(csv_text)
     response.headers["Content-Type"] = "text/csv; charset=utf-8-sig"
-    response.headers["Content-Disposition"] = f"attachment; filename=service_desk_v2_1_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    response.headers["Content-Disposition"] = f"attachment; filename=service_desk_v2_1_{format_datetime(datetime.now(timezone.utc), '%Y%m%d_%H%M%S')}.csv"
     return response
 
 
@@ -366,7 +366,7 @@ def create_ticket():
             flash("Categoria inválida ou inativa.", "danger")
             return render_template("tickets/form.html", form=form, title="Nova solicitação", schema_map=category_schema_payload())
 
-        due_at = datetime.combine(form.due_at.data, time.max, tzinfo=timezone.utc)
+        due_at = local_date_end_as_utc(form.due_at.data)
         try:
             custom_data = collect_custom_data(category)
             ticket = Ticket(
@@ -425,7 +425,7 @@ def edit(ticket_id):
     if request.method == "GET":
         form.category_id.data = ticket.category_id
         form.branch_id.data = ticket.branch_id or 0
-        form.due_at.data = ticket.due_at.date()
+        form.due_at.data = to_local(ticket.due_at).date()
 
     if form.validate_on_submit():
         category = db.session.get(Category, form.category_id.data)
@@ -447,7 +447,7 @@ def edit(ticket_id):
             ticket.priority = form.priority.data
             ticket.category_id = category.id
             ticket.branch_id = form.branch_id.data or None
-            ticket.due_at = datetime.combine(form.due_at.data, time.max, tzinfo=timezone.utc)
+            ticket.due_at = local_date_end_as_utc(form.due_at.data)
             ticket.custom_data = collect_custom_data(category)
             added_attachments = add_ticket_attachments(ticket, form.initial_files.data, current_user, "initial", "INICIAL")
             if added_attachments:

@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, timezone
 
 from flask import Blueprint, abort, jsonify, make_response, redirect, render_template, url_for
 from flask_login import current_user, login_required
@@ -8,6 +8,7 @@ from sqlalchemy.orm import aliased
 from ..extensions import db
 from ..models import Notification, Ticket, User, utc_now
 from ..services.ticket_workflow import CANCELED, DONE, IN_PROGRESS, OPEN, PAUSED
+from ..services.timezone import local_day_bounds_utc
 
 bp = Blueprint("main", __name__)
 
@@ -25,8 +26,7 @@ def health():
 
 def dashboard_counts(query, now=None):
     now = now or datetime.now(timezone.utc)
-    today_start = datetime.combine(now.date(), time.min, tzinfo=timezone.utc)
-    tomorrow_start = today_start + timedelta(days=1)
+    today_start, tomorrow_start = local_day_bounds_utc(now)
     active_filter = Ticket.status.notin_([DONE, CANCELED])
     return {
         "ativas": query.filter(active_filter).count(),

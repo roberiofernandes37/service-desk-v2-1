@@ -3,7 +3,7 @@
 <section class="page-title detail-title">
   <div>
     <h1>#{{ ticket.id }} - {{ ticket.title }}</h1>
-    <p>{{ ticket.status|status_label }} - {{ ticket.priority|priority_label }} - prazo {{ ticket.due_at.strftime('%d/%m/%Y') }}</p>
+    <p>{{ ticket.status|status_label }} - {{ ticket.priority|priority_label }} - prazo {{ format_datetime(ticket.due_at, "%d/%m/%Y") }}</p>
   </div>
   {% if ticket.status == "Aberta" and (ticket.requester_id == current_user.id or current_user.has_permission('can_manage_settings')) %}
     <div class="title-actions">
@@ -44,15 +44,15 @@
       </div>
       <div>
         <dt>Criada em</dt>
-        <dd>{{ ticket.created_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+        <dd>{{ format_datetime(ticket.created_at) }}</dd>
       </div>
       <div>
         <dt>Atualizada em</dt>
-        <dd>{{ ticket.updated_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+        <dd>{{ format_datetime(ticket.updated_at) }}</dd>
       </div>
       <div>
         <dt>Prazo</dt>
-        <dd>{{ ticket.due_at.strftime('%d/%m/%Y') }}</dd>
+        <dd>{{ format_datetime(ticket.due_at, "%d/%m/%Y") }}</dd>
       </div>
       <div>
         <dt>Tempo pausado</dt>
@@ -65,7 +65,7 @@
       {% if ticket.completed_at %}
         <div>
           <dt>Concluída em</dt>
-          <dd>{{ ticket.completed_at.strftime('%d/%m/%Y %H:%M') }}</dd>
+          <dd>{{ format_datetime(ticket.completed_at) }}</dd>
         </div>
       {% endif %}
     </dl>
@@ -104,7 +104,7 @@
                 <div>
                   <strong>{{ 'Arquivo final' if attachment.kind == 'final' else 'Anexo inicial' }}</strong>
                   <span>{{ attachment.original_name }}</span>
-                  <small class="attachment-meta">Enviado por {{ attachment.uploaded_by.name }} em {{ attachment.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                  <small class="attachment-meta">Enviado por {{ attachment.uploaded_by.name }} em {{ format_datetime(attachment.created_at) }}</small>
                 </div>
               </div>
               <div class="row-actions">
@@ -134,7 +134,7 @@
         {% for comment in ticket.comments %}
           <article>
             <strong>{{ comment.user.name }}</strong>
-            <span>{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+            <span>{{ format_datetime(comment.created_at) }}</span>
             <p>{{ comment.body }}</p>
           </article>
         {% else %}
@@ -211,7 +211,7 @@
         {% for item in ticket.history %}
           <li>
             <strong>{{ action_labels.get(item.action, item.action) }}</strong>
-            <span>{{ item.user.name }} - {{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+            <span>{{ item.user.name }} - {{ format_datetime(item.created_at) }}</span>
             {% if item.note %}<p>{{ item.note }}</p>{% endif %}
           </li>
         {% else %}

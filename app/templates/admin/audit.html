@@ -54,7 +54,7 @@
       <tbody>
         {% for log in logs %}
           <tr>
-            <td class="px-4">{{ log.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td class="px-4">{{ format_datetime(log.created_at) }}</td>
             <td>{{ log.user.name if log.user else "-" }}</td>
             <td>{{ log.entity }}</td>
             <td>{{ log.entity_id if log.entity_id is not none else "-" }}</td>

@@ -8,6 +8,7 @@ from app.config import TestingConfig
 from app.extensions import db
 from app.models import AccessProfile, Branch, Category, DynamicField, Ticket, User
 from app.routes.tickets import can_edit_ticket
+from app.services.timezone import to_local
 
 
 @pytest.fixture()
@@ -111,7 +112,7 @@ def test_open_ticket_owner_can_edit_all_request_data(app, tmp_path):
         assert ticket.priority == "Urgente"
         assert ticket.category_id == new_category_id
         assert ticket.branch_id == branch_id
-        assert ticket.due_at.date().isoformat() == "2026-09-01"
+        assert to_local(ticket.due_at).date().isoformat() == "2026-09-01"
         assert ticket.custom_data == {"SKU": "SKU-123"}
         assert ticket.initial_file and ticket.initial_file.endswith("_novo-anexo.txt")
 

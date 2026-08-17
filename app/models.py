@@ -258,6 +258,14 @@ class BackupConfig(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
 
+class SystemConfig(db.Model):
+    __tablename__ = "system_configs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    timezone = db.Column(db.String(80), nullable=False, default="America/Fortaleza")
+    updated_at = db.Column(db.DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
+
+
 class BackupRun(db.Model):
     __tablename__ = "backup_runs"
 

@@ -125,6 +125,11 @@ class BranchForm(FlaskForm):
     submit = SubmitField("Salvar filial")
 
 
+class TimezoneSettingsForm(FlaskForm):
+    timezone = SelectField("Fuso horário do sistema", choices=[], validators=[DataRequired()])
+    submit = SubmitField("Salvar fuso horário")
+
+
 class BackupSettingsForm(FlaskForm):
     enabled = BooleanField("Backup agendado ativo")
     schedule_times = StringField("Horários", validators=[DataRequired(), Length(max=200)])

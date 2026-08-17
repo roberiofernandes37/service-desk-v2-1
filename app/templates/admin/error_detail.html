@@ -12,7 +12,7 @@
 
 <section class="panel">
   <div class="audit-meta">
-    <div><strong>Data</strong><span>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</span></div>
+    <div><strong>Data</strong><span>{{ format_datetime(log.created_at, "%d/%m/%Y %H:%M:%S") }}</span></div>
     <div><strong>Status</strong><span>{{ "Resolvido" if log.resolved else "Pendente" }}</span></div>
     <div><strong>Usuário</strong><span>{{ log.user_name or (log.user.name if log.user else "-") }}</span></div>
     <div><strong>Tipo</strong><span>{{ log.error_type }}</span></div>
