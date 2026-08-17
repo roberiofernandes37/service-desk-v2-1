@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -6,8 +6,10 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /srv/service-desk
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev postgresql-client \
+    && apt-get install -y --no-install-recommends gcc libpq-dev postgresql-client-15 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="/usr/lib/postgresql/15/bin:${PATH}"
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

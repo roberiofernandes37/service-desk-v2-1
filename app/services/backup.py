@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -47,6 +48,19 @@ def database_url():
     return current_app.config["SQLALCHEMY_DATABASE_URI"]
 
 
+def prepare_postgres_restore_sql(source_sql):
+    """Remove settings emitted by newer pg_dump clients but unknown to PG15."""
+    source_sql = Path(source_sql)
+    compatible_sql = source_sql.with_name(f"{source_sql.stem}.pg15.sql")
+    unsupported_setting = re.compile(r"^\s*SET\s+transaction_timeout\s*=", re.IGNORECASE)
+    with source_sql.open("r", encoding="utf-8") as source, compatible_sql.open("w", encoding="utf-8") as target:
+        for line in source:
+            if unsupported_setting.match(line):
+                continue
+            target.write(line)
+    return compatible_sql
+
+
 def dump_database(target_sql):
     uri = database_url()
     if uri.startswith("postgresql"):
@@ -78,6 +92,7 @@ def dump_database(target_sql):
 def restore_database(source_sql):
     uri = database_url()
     if uri.startswith("postgresql"):
+        source_sql = prepare_postgres_restore_sql(source_sql)
         run_command(
             [
                 "psql",

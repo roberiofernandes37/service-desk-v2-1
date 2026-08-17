@@ -94,3 +94,16 @@ def test_backup_command_exposes_stderr():
         backup_service.run_command(
             [sys.executable, "-c", "import sys; sys.stderr.write('detalhe do erro'); sys.exit(3)"]
         )
+
+
+def test_postgres_restore_sql_removes_incompatible_transaction_timeout(tmp_path):
+    source = tmp_path / "database.sql"
+    source.write_text(
+        "SET transaction_timeout = 0;\nSET statement_timeout = 0;\nSELECT 1;\n",
+        encoding="utf-8",
+    )
+
+    compatible = backup_service.prepare_postgres_restore_sql(source)
+
+    assert "transaction_timeout" not in compatible.read_text(encoding="utf-8")
+    assert "SET statement_timeout = 0;" in compatible.read_text(encoding="utf-8")
