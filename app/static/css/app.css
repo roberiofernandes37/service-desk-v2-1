@@ -2825,3 +2825,49 @@ textarea:focus {
     padding-top: 12px;
   }
 }
+
+/* Escala tipográfica compacta para uso operacional contínuo. */
+.page-title h1 {
+  font-size: clamp(1.3rem, 1.16rem + .28vw, 1.5rem);
+}
+
+.page-title.detail-title h1 {
+  font-size: clamp(1.25rem, 1.12rem + .24vw, 1.42rem);
+}
+
+.page-title p {
+  font-size: .84rem;
+}
+
+.panel-head h2,
+.panel > h1:first-child,
+.panel > h2:first-child,
+.builder-head h2 {
+  font-size: .94rem;
+}
+
+.button,
+.small-button,
+button,
+input[type="submit"],
+.btn {
+  font-size: .86rem;
+}
+
+.dashboard-metrics .metric-card strong {
+  font-size: 1.75rem;
+}
+
+.ticket-card h2 {
+  font-size: .88rem;
+  line-height: 1.32;
+}
+
+.app-brand-copy strong {
+  font-size: 1rem;
+}
+
+.sidebar-nav .nav-link,
+.sidebar-utility-link {
+  font-size: .82rem;
+}
