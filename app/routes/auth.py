@@ -23,7 +23,7 @@ def login():
             audit("User", user.id, "login")
             db.session.commit()
             return redirect(url_for("main.dashboard"))
-        flash("Credenciais invalidas ou usuario inativo.", "danger")
+        flash("Credenciais inválidas ou usuário inativo.", "danger")
     return render_template("auth/login.html", form=form)
 
 

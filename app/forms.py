@@ -41,11 +41,11 @@ class MailSettingsForm(FlaskForm):
 
 
 class TicketForm(FlaskForm):
-    title = StringField("Titulo", validators=[DataRequired(), Length(max=200)])
-    description = TextAreaField("Descricao", validators=[DataRequired()])
+    title = StringField("Título", validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField("Descrição", validators=[DataRequired()])
     priority = SelectField(
         "Prioridade",
-        choices=[("Baixa", "Baixa"), ("Media", "Media"), ("Alta", "Alta"), ("Urgente", "Urgente")],
+        choices=[("Baixa", "Baixa"), ("Media", "Média"), ("Alta", "Alta"), ("Urgente", "Urgente")],
         validators=[DataRequired()],
     )
     category_id = SelectField("Categoria", coerce=int, validators=[DataRequired()])
@@ -55,12 +55,12 @@ class TicketForm(FlaskForm):
         "Anexos iniciais",
         validators=[FileAllowed(["txt", "pdf", "png", "jpg", "jpeg", "csv", "xlsx", "xls", "doc", "docx", "xml", "ppt", "pptx"])],
     )
-    submit = SubmitField("Salvar solicitacao")
+    submit = SubmitField("Salvar solicitação")
 
 
 class TicketActionForm(FlaskForm):
-    action = HiddenField("Acao", validators=[DataRequired()])
-    note = TextAreaField("Observacao", validators=[Optional(), Length(max=4000)])
+    action = HiddenField("Ação", validators=[DataRequired()])
+    note = TextAreaField("Observação", validators=[Optional(), Length(max=4000)])
     final_files = MultipleFileField(
         "Arquivos finais",
         validators=[FileAllowed(["txt", "pdf", "png", "jpg", "jpeg", "csv", "xlsx", "xls", "doc", "docx", "xml", "ppt", "pptx"])],
@@ -69,13 +69,13 @@ class TicketActionForm(FlaskForm):
 
 
 class TicketTransferForm(FlaskForm):
-    assignee_id = SelectField("Novo responsavel", coerce=int, validators=[DataRequired()])
-    note = TextAreaField("Observacao", validators=[Optional(), Length(max=1000)])
+    assignee_id = SelectField("Novo responsável", coerce=int, validators=[DataRequired()])
+    note = TextAreaField("Observação", validators=[Optional(), Length(max=1000)])
     submit = SubmitField("Transferir")
 
 
 class CommentForm(FlaskForm):
-    body = StringField("Comentario", validators=[DataRequired(), Length(max=1000)])
+    body = StringField("Comentário", validators=[DataRequired(), Length(max=1000)])
     submit = SubmitField("Enviar")
 
 
@@ -85,7 +85,7 @@ class UserForm(FlaskForm):
     password = PasswordField("Senha inicial", validators=[Optional(), Length(min=8)])
     profile_id = SelectField("Perfil", coerce=int, validators=[DataRequired()])
     active = BooleanField("Ativo", default=True)
-    submit = SubmitField("Salvar usuario")
+    submit = SubmitField("Salvar usuário")
 
 
 class UserEditForm(FlaskForm):
@@ -93,7 +93,7 @@ class UserEditForm(FlaskForm):
     email = EmailField("E-mail", validators=[DataRequired(), Email()])
     profile_id = SelectField("Perfil", coerce=int, validators=[DataRequired()])
     active = BooleanField("Ativo")
-    submit = SubmitField("Salvar alteracoes")
+    submit = SubmitField("Salvar alterações")
 
 
 class AdminPasswordResetForm(FlaskForm):
@@ -104,11 +104,11 @@ class AdminPasswordResetForm(FlaskForm):
 
 class AccessProfileForm(FlaskForm):
     name = StringField("Nome", validators=[DataRequired(), Length(max=100)])
-    can_manage_users = BooleanField("Gerir usuarios")
-    can_manage_settings = BooleanField("Gerir parametros")
-    can_reset_data = BooleanField("Operacoes criticas")
-    can_work_tickets = BooleanField("Trabalhar solicitacoes")
-    can_view_reports = BooleanField("Ver relatorios")
+    can_manage_users = BooleanField("Gerir usuários")
+    can_manage_settings = BooleanField("Gerir parâmetros")
+    can_reset_data = BooleanField("Operações críticas")
+    can_work_tickets = BooleanField("Trabalhar solicitações")
+    can_view_reports = BooleanField("Ver relatórios")
     submit = SubmitField("Salvar perfil")
 
 
@@ -127,14 +127,14 @@ class BranchForm(FlaskForm):
 
 class BackupSettingsForm(FlaskForm):
     enabled = BooleanField("Backup agendado ativo")
-    schedule_times = StringField("Horarios", validators=[DataRequired(), Length(max=200)])
+    schedule_times = StringField("Horários", validators=[DataRequired(), Length(max=200)])
     max_backup_count = IntegerField("Quantidade a manter", validators=[DataRequired(), NumberRange(min=1, max=365)])
     include_uploads = BooleanField("Incluir anexos", default=True)
     include_logs = BooleanField("Incluir logs", default=True)
-    submit = SubmitField("Salvar configuracao")
+    submit = SubmitField("Salvar configuração")
 
 
 class BackupRestoreForm(FlaskForm):
     backup_id = HiddenField("Backup", validators=[DataRequired()])
-    confirmation = StringField("Confirmacao", validators=[DataRequired(), Length(max=20)])
+    confirmation = StringField("Confirmação", validators=[DataRequired(), Length(max=20)])
     submit = SubmitField("Restaurar")

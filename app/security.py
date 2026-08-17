@@ -11,7 +11,7 @@ def permission_required(permission_name):
             if not current_user.is_authenticated:
                 return redirect(url_for("auth.login"))
             if not current_user.has_permission(permission_name):
-                flash("Voce nao possui permissao para esta area.", "danger")
+                flash("Você não possui permissão para esta área.", "danger")
                 return redirect(url_for("main.dashboard"))
             return view(*args, **kwargs)
 

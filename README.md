@@ -2,6 +2,13 @@
 
 Nova base do Service Desk, criada em pasta separada para substituir gradualmente a V2.
 
+## Documentação completa
+
+Para arquitetura, instalação, permissões, fluxo de atendimento, SLA, anexos, e-mail, backup, diagnóstico e manutenção, consulte:
+
+- [Manual técnico, operacional e de manutenção](docs/OPERACAO_E_MANUTENCAO.md)
+- [Manual do usuário](docs/MANUAL_DO_USUARIO.md)
+
 ## Decisoes principais
 
 - Flask com application factory e blueprints.

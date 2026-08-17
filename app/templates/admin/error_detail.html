@@ -14,9 +14,9 @@
   <div class="audit-meta">
     <div><strong>Data</strong><span>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</span></div>
     <div><strong>Status</strong><span>{{ "Resolvido" if log.resolved else "Pendente" }}</span></div>
-    <div><strong>Usuario</strong><span>{{ log.user_name or (log.user.name if log.user else "-") }}</span></div>
+    <div><strong>Usuário</strong><span>{{ log.user_name or (log.user.name if log.user else "-") }}</span></div>
     <div><strong>Tipo</strong><span>{{ log.error_type }}</span></div>
-    <div><strong>Metodo</strong><span>{{ log.method or "-" }}</span></div>
+    <div><strong>Método</strong><span>{{ log.method or "-" }}</span></div>
     <div><strong>Status HTTP</strong><span>{{ log.status_code or "-" }}</span></div>
     <div><strong>Endpoint</strong><span>{{ log.endpoint or "-" }}</span></div>
     <div><strong>Rota</strong><span>{{ log.path or "-" }}</span></div>
@@ -42,7 +42,7 @@
         <dd>{{ log.user_agent or "-" }}</dd>
       </div>
       <div>
-        <dt>Usuario ID</dt>
+        <dt>Usuário ID</dt>
         <dd>{{ log.user_id or "-" }}</dd>
       </div>
     </dl>
@@ -50,7 +50,7 @@
 </div>
 
 <section class="panel">
-  <h2>Rastreamento tecnico</h2>
+  <h2>Rastreamento técnico</h2>
   <pre class="json-box">{{ traceback_payload }}</pre>
 </section>
 
@@ -64,10 +64,10 @@
         <option value="yes" {% if log.resolved %}selected{% endif %}>Resolvido</option>
       </select>
     </label>
-    <label>Observacao tecnica
-      <textarea name="technical_note" rows="4" placeholder="Causa encontrada, correcao feita ou proximo passo">{{ log.technical_note or "" }}</textarea>
+    <label>Observação técnica
+      <textarea name="technical_note" rows="4" placeholder="Causa encontrada, correção feita ou próximo passo">{{ log.technical_note or "" }}</textarea>
     </label>
-    <button type="submit" class="primary">Salvar diagnostico</button>
+    <button type="submit" class="primary">Salvar diagnóstico</button>
   </form>
 </section>
 {% endblock %}

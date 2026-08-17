@@ -3,7 +3,7 @@
 <section class="page-title">
   <div>
     <h1>Avisos</h1>
-    <p>Notificacoes internas sobre solicitacoes e comentarios.</p>
+    <p>Notificações internas sobre solicitações e comentários.</p>
   </div>
   <form method="post" action="{{ url_for('main.read_all_notifications') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

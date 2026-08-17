@@ -48,7 +48,7 @@ def apply_action(ticket, user, action, note=None, final_file=None):
         CANCELED: set(),
     }
     if action not in valid.get(current_status, set()):
-        raise BadRequest("Transicao de status invalida.")
+        raise BadRequest("Transição de status inválida.")
 
     timestamp = now_utc()
     if action == "assumir":

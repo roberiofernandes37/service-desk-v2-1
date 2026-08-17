@@ -65,7 +65,7 @@ def dump_database(target_sql):
                 file.write(f"{line}\n")
         connection.close()
         return
-    raise RuntimeError("Tipo de banco nao suportado para backup automatico.")
+    raise RuntimeError("Tipo de banco não suportado para backup automático.")
 
 
 def restore_database(source_sql):
@@ -83,7 +83,7 @@ def restore_database(source_sql):
         connection.commit()
         connection.close()
         return
-    raise RuntimeError("Tipo de banco nao suportado para restauracao automatica.")
+    raise RuntimeError("Tipo de banco não suportado para restauração automática.")
 
 
 def add_directory(archive, path, arcname):
@@ -151,41 +151,41 @@ def safe_extract(archive, destination):
     for member in archive.getmembers():
         target = (destination / member.name).resolve()
         if not str(target).startswith(str(destination)):
-            raise RuntimeError("Arquivo de backup contem caminho invalido.")
+            raise RuntimeError("Arquivo de backup contém caminho inválido.")
     archive.extractall(destination)
 
 
 def validate_backup_file(path):
     source = Path(path or "")
     if not source.exists():
-        raise RuntimeError("Arquivo de backup nao encontrado.")
+        raise RuntimeError("Arquivo de backup não encontrado.")
     if source.stat().st_size <= 0:
         raise RuntimeError("Arquivo de backup esta vazio.")
     if not tarfile.is_tarfile(source):
-        raise RuntimeError("Arquivo nao e um pacote de backup valido.")
+        raise RuntimeError("Arquivo não é um pacote de backup válido.")
 
     with tarfile.open(source, "r:gz") as archive:
         names = set(archive.getnames())
         for member in archive.getmembers():
             member_path = Path(member.name)
             if member_path.is_absolute() or ".." in member_path.parts:
-                raise RuntimeError("Arquivo de backup contem caminho invalido.")
+                raise RuntimeError("Arquivo de backup contém caminho inválido.")
         if "database.sql" not in names:
             raise RuntimeError("Backup sem database.sql.")
         if "metadata.json" not in names:
             raise RuntimeError("Backup sem metadata.json.")
         metadata_file = archive.extractfile("metadata.json")
         if not metadata_file:
-            raise RuntimeError("Nao foi possivel ler metadata.json.")
+            raise RuntimeError("Não foi possível ler metadata.json.")
         metadata = json.loads(metadata_file.read().decode("utf-8"))
         if metadata.get("database") != "database.sql":
-            raise RuntimeError("Metadata do backup esta inconsistente.")
+            raise RuntimeError("Metadata do backup está inconsistente.")
     return True
 
 
 def validate_backup_run(backup_run):
     if not backup_run or backup_run.action != "backup" or backup_run.status != "success":
-        raise RuntimeError("Registro de backup invalido para validacao.")
+        raise RuntimeError("Registro de backup inválido para validação.")
     validate_backup_file(backup_run.file_path)
     backup_run.message = "Backup testado com sucesso."
     db.session.commit()
@@ -203,7 +203,7 @@ def restore_backup(backup_run, user_id=None):
         file_path=str(source),
         include_uploads=backup_run.include_uploads,
         include_logs=backup_run.include_logs,
-        message="Restauracao iniciada.",
+        message="Restauração iniciada.",
     )
     db.session.add(run)
     db.session.commit()
@@ -225,14 +225,14 @@ def restore_backup(backup_run, user_id=None):
             record = db.session.get(BackupRun, run_id)
             if record:
                 record.status = "success"
-                record.message = "Restauracao concluida."
+                record.message = "Restauração concluída."
                 record.finished_at = datetime.now(timezone.utc)
                 db.session.commit()
                 return record
         except Exception:
             db.session.rollback()
         run.status = "success"
-        run.message = "Restauracao concluida."
+        run.message = "Restauração concluída."
         run.finished_at = datetime.now(timezone.utc)
         return run
     except Exception as exc:

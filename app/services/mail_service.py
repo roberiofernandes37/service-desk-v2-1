@@ -33,7 +33,7 @@ def load_mail_config(app=None):
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError):
-        current_app.logger.exception("Nao foi possivel ler a configuracao SMTP.")
+        current_app.logger.exception("Não foi possível ler a configuração SMTP.")
         return {}
     return {key: data.get(key) for key in MAIL_KEYS if key in data}
 
@@ -48,7 +48,7 @@ def normalize_mail_config(data):
     normalized["use_tls"] = bool(normalized["use_tls"])
     normalized["use_ssl"] = bool(normalized["use_ssl"])
     if normalized["use_tls"] and normalized["use_ssl"]:
-        raise ValueError("TLS e SSL nao podem ser usados ao mesmo tempo.")
+        raise ValueError("TLS e SSL não podem ser usados ao mesmo tempo.")
     return normalized
 
 
@@ -109,11 +109,11 @@ def test_email_connection(recipient, subject, body, html=None, settings=None):
         return True, None
     except smtplib.SMTPAuthenticationError:
         message = "Autenticação SMTP recusada. No Gmail, use uma senha de aplicativo de 16 caracteres."
-        current_app.logger.exception("Autenticacao SMTP recusada para %s.", recipient)
+        current_app.logger.exception("Autenticação SMTP recusada para %s.", recipient)
         return False, message
     except (smtplib.SMTPConnectError, smtplib.SMTPServerDisconnected, socket.timeout, TimeoutError):
         message = "Não foi possível conectar ao servidor SMTP. Confira servidor, porta e TLS/SSL."
-        current_app.logger.exception("Falha de conexao SMTP para %s.", recipient)
+        current_app.logger.exception("Falha de conexão SMTP para %s.", recipient)
         return False, message
     except Exception:
         message = "O servidor SMTP rejeitou o teste. Confira os dados informados e as permissões da conta."

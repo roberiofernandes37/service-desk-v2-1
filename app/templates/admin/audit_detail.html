@@ -13,10 +13,10 @@
 <section class="panel">
   <div class="audit-meta">
     <div><strong>Data</strong><span>{{ log.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</span></div>
-    <div><strong>Usuario</strong><span>{{ log.user.name if log.user else "-" }}</span></div>
+    <div><strong>Usuário</strong><span>{{ log.user.name if log.user else "-" }}</span></div>
     <div><strong>Entidade</strong><span>{{ log.entity }}</span></div>
     <div><strong>ID</strong><span>{{ log.entity_id if log.entity_id is not none else "-" }}</span></div>
-    <div><strong>Acao</strong><span>{{ log.action }}</span></div>
+    <div><strong>Ação</strong><span>{{ log.action }}</span></div>
     <div><strong>IP</strong><span>{{ log.ip_address or "-" }}</span></div>
   </div>
 </section>

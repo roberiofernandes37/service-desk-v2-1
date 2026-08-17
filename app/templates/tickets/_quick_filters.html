@@ -4,8 +4,8 @@
   {% if current_user.has_permission('can_work_tickets') %}
     <a class="{% if filters.assignee_id == current_user.id %}active{% endif %}" href="{{ url_for(quick_endpoint, assignee_id=current_user.id, sort='due') }}">Minha fila</a>
   {% endif %}
-  <a class="{% if filters.requester_id == current_user.id %}active{% endif %}" href="{{ url_for(quick_endpoint, requester_id=current_user.id, sort='recent') }}">Minhas solicitacoes</a>
-  <a class="{% if filters.assignee_id == -1 %}active{% endif %}" href="{{ url_for(quick_endpoint, assignee_id=-1, sort='due') }}">Sem responsavel</a>
+  <a class="{% if filters.requester_id == current_user.id %}active{% endif %}" href="{{ url_for(quick_endpoint, requester_id=current_user.id, sort='recent') }}">Minhas solicitações</a>
+  <a class="{% if filters.assignee_id == -1 %}active{% endif %}" href="{{ url_for(quick_endpoint, assignee_id=-1, sort='due') }}">Sem responsável</a>
   <a class="{% if filters.due_state == 'today' %}active{% endif %}" href="{{ url_for(quick_endpoint, due_state='today', sort='due') }}">Vencem hoje</a>
   <a class="{% if filters.due_state == 'overdue' %}active{% endif %}" href="{{ url_for(quick_endpoint, due_state='overdue', sort='due') }}">Atrasadas</a>
 </nav>

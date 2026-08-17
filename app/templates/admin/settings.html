@@ -2,8 +2,8 @@
 {% block content %}
 <section class="page-title">
   <div>
-    <h1>Parametros</h1>
-    <p>Categorias e filiais usadas nas solicitacoes.</p>
+    <h1>Parâmetros</h1>
+    <p>Categorias e filiais usadas nas solicitações.</p>
   </div>
   <div class="title-actions">
     <a class="button" href="{{ url_for('admin.email_settings') }}"><i class="fa-solid fa-envelope me-2"></i>Configurar e-mail</a>
@@ -30,7 +30,7 @@
               <option value="number">Numero</option>
               <option value="date">Data</option>
             </select>
-            <label class="check"><input type="checkbox" name="field_required[]" value="0"> Obrigatorio</label>
+            <label class="check"><input type="checkbox" name="field_required[]" value="0"> Obrigatório</label>
           </div>
         </div>
       </div>
@@ -76,7 +76,7 @@
                         <option value="number" {% if field.field_type == "number" %}selected{% endif %}>Numero</option>
                         <option value="date" {% if field.field_type == "date" %}selected{% endif %}>Data</option>
                       </select>
-                      <label class="check"><input type="checkbox" name="edit_field_required[]" value="{{ loop.index0 }}" {% if field.required %}checked{% endif %}> Obrigatorio</label>
+                      <label class="check"><input type="checkbox" name="edit_field_required[]" value="{{ loop.index0 }}" {% if field.required %}checked{% endif %}> Obrigatório</label>
                     </div>
                   {% else %}
                     <div class="field-row">
@@ -87,7 +87,7 @@
                         <option value="number">Numero</option>
                         <option value="date">Data</option>
                       </select>
-                      <label class="check"><input type="checkbox" name="edit_field_required[]" value="0"> Obrigatorio</label>
+                      <label class="check"><input type="checkbox" name="edit_field_required[]" value="0"> Obrigatório</label>
                     </div>
                   {% endfor %}
                 </div>
@@ -140,7 +140,7 @@
           <option value="number">Numero</option>
           <option value="date">Data</option>
         </select>
-        <label class="check"><input type="checkbox" name="${suffix}_required[]" value="${index}"> Obrigatorio</label>
+        <label class="check"><input type="checkbox" name="${suffix}_required[]" value="${index}"> Obrigatório</label>
       </div>
     `;
   }

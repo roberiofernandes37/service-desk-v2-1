@@ -12,17 +12,17 @@
   {% include "tickets/_quick_filters.html" %}
 
   <form method="get" class="filters advanced kanban-filters">
-    <input name="q" value="{{ filters.q }}" placeholder="Buscar por titulo ou descricao">
+    <input name="q" value="{{ filters.q }}" placeholder="Buscar por título ou descrição">
     <select name="status">
       <option value="">Todos os status</option>
       {% for option in statuses %}
-        <option value="{{ option }}" {% if filters.status == option %}selected{% endif %}>{{ option }}</option>
+        <option value="{{ option }}" {% if filters.status == option %}selected{% endif %}>{{ option|status_label }}</option>
       {% endfor %}
     </select>
     <select name="priority">
-      <option value="">Todas prioridades</option>
+      <option value="">Todas as prioridades</option>
       {% for option in priorities %}
-        <option value="{{ option }}" {% if filters.priority == option %}selected{% endif %}>{{ option }}</option>
+        <option value="{{ option }}" {% if filters.priority == option %}selected{% endif %}>{{ option|priority_label }}</option>
       {% endfor %}
     </select>
     <select name="due_state">
@@ -36,27 +36,27 @@
       {% endfor %}
     </select>
     <select name="category_id">
-      <option value="">Todas categorias</option>
+      <option value="">Todas as categorias</option>
       {% for category in categories %}
         <option value="{{ category.id }}" {% if filters.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
       {% endfor %}
     </select>
     <select name="branch_id">
-      <option value="">Todas filiais</option>
+      <option value="">Todas as filiais</option>
       <option value="-1" {% if filters.branch_id == -1 %}selected{% endif %}>Geral</option>
       {% for branch in branches %}
         <option value="{{ branch.id }}" {% if filters.branch_id == branch.id %}selected{% endif %}>{{ branch.name }}</option>
       {% endfor %}
     </select>
     <select name="requester_id">
-      <option value="">Todos solicitantes</option>
+      <option value="">Todos os solicitantes</option>
       {% for requester in requesters %}
         <option value="{{ requester.id }}" {% if filters.requester_id == requester.id %}selected{% endif %}>{{ requester.name }}</option>
       {% endfor %}
     </select>
     <select name="assignee_id">
-      <option value="">Todos responsaveis</option>
-      <option value="-1" {% if filters.assignee_id == -1 %}selected{% endif %}>Sem responsavel</option>
+      <option value="">Todos os responsáveis</option>
+      <option value="-1" {% if filters.assignee_id == -1 %}selected{% endif %}>Sem responsável</option>
       {% for assignee in assignees %}
         <option value="{{ assignee.id }}" {% if filters.assignee_id == assignee.id %}selected{% endif %}>{{ assignee.name }}</option>
       {% endfor %}
@@ -104,7 +104,7 @@
           <article class="ticket-card{% if status_name == 'Concluida' %} ticket-card-completed{% endif %}">
             <div class="card-row">
               <span class="ticket-id">#{{ ticket.id }}</span>
-              <span class="priority-badge priority-{{ ticket.priority|lower }}">{{ ticket.priority }}</span>
+              <span class="priority-badge priority-{{ ticket.priority|lower }}">{{ ticket.priority|priority_label }}</span>
             </div>
             <h2>{{ ticket.title }}{% if ticket.active_attachments %}<i class="fa-solid fa-paperclip attachment-indicator" title="Possui anexo" aria-label="Possui anexo"></i>{% endif %}</h2>
             <span class="category-chip">{{ ticket.category.name if ticket.category else "Sem categoria" }}</span>

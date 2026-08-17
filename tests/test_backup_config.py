@@ -44,7 +44,7 @@ def test_backup_format_helpers():
     assert format_bytes(None) == "-"
     assert format_bytes(900) == "900 B"
     assert format_bytes(2048) == "2.0 KB"
-    assert backup_status_label("success") == "Concluido"
+    assert backup_status_label("success") == "Concluído"
     assert backup_status_label("failed") == "Falhou"
 
 

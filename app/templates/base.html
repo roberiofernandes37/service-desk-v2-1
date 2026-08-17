@@ -11,7 +11,7 @@
 <body class="app-shell{% if current_user.is_authenticated %} has-sidebar{% endif %}">
   {% if current_user.is_authenticated %}
     <header class="app-header">
-      <aside class="app-sidebar" id="appSidebar" aria-label="Navegacao principal">
+      <aside class="app-sidebar" id="appSidebar" aria-label="Navegação principal">
         <div class="sidebar-brand-row">
           <a class="app-brand" href="{{ url_for('main.dashboard') }}" aria-label="Service Desk V2.1 - Painel">
             <span class="app-brand-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></span>
@@ -25,17 +25,17 @@
         <nav class="sidebar-nav" aria-label="Menu do sistema">
           <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link {% if request.endpoint == 'main.dashboard' %}active fw-bold{% endif %}" href="{{ url_for('main.dashboard') }}" title="Painel"><span class="sidebar-nav-icon"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i></span><span class="sidebar-nav-label">Painel</span></a></li>
-            <li class="nav-item"><a class="nav-link {% if request.endpoint in ['tickets.list_tickets', 'tickets.detail', 'tickets.edit'] %}active fw-bold{% endif %}" href="{{ url_for('tickets.list_tickets') }}" title="Solicitacoes"><span class="sidebar-nav-icon"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span><span class="sidebar-nav-label">Solicitacoes</span></a></li>
+            <li class="nav-item"><a class="nav-link {% if request.endpoint in ['tickets.list_tickets', 'tickets.detail', 'tickets.edit'] %}active fw-bold{% endif %}" href="{{ url_for('tickets.list_tickets') }}" title="Solicitações"><span class="sidebar-nav-icon"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span><span class="sidebar-nav-label">Solicitações</span></a></li>
             <li class="nav-item"><a class="nav-link {% if request.endpoint == 'tickets.kanban' %}active fw-bold{% endif %}" href="{{ url_for('tickets.kanban') }}" title="Kanban"><span class="sidebar-nav-icon"><i class="fa-solid fa-table-columns" aria-hidden="true"></i></span><span class="sidebar-nav-label">Kanban</span></a></li>
-            <li class="nav-item"><a class="nav-link {% if request.endpoint == 'tickets.create_ticket' %}active fw-bold{% endif %}" href="{{ url_for('tickets.create_ticket') }}" title="Nova"><span class="sidebar-nav-icon"><i class="fa-solid fa-plus" aria-hidden="true"></i></span><span class="sidebar-nav-label">Nova</span></a></li>
+            <li class="nav-item"><a class="nav-link {% if request.endpoint == 'tickets.create_ticket' %}active fw-bold{% endif %}" href="{{ url_for('tickets.create_ticket') }}" title="Nova solicitação"><span class="sidebar-nav-icon"><i class="fa-solid fa-plus" aria-hidden="true"></i></span><span class="sidebar-nav-label">Nova solicitação</span></a></li>
             {% if current_user.has_permission('can_manage_settings') %}
-              <li class="nav-item"><a class="nav-link {% if request.endpoint in ['admin.settings', 'admin.email_settings', 'admin.edit_category', 'admin.toggle_category', 'admin.update_category_fields', 'admin.edit_branch', 'admin.toggle_branch'] %}active fw-bold{% endif %}" href="{{ url_for('admin.settings') }}" title="Parametros"><span class="sidebar-nav-icon"><i class="fa-solid fa-sliders" aria-hidden="true"></i></span><span class="sidebar-nav-label">Parametros</span></a></li>
+              <li class="nav-item"><a class="nav-link {% if request.endpoint in ['admin.settings', 'admin.email_settings', 'admin.edit_category', 'admin.toggle_category', 'admin.update_category_fields', 'admin.edit_branch', 'admin.toggle_branch'] %}active fw-bold{% endif %}" href="{{ url_for('admin.settings') }}" title="Parâmetros"><span class="sidebar-nav-icon"><i class="fa-solid fa-sliders" aria-hidden="true"></i></span><span class="sidebar-nav-label">Parâmetros</span></a></li>
             {% endif %}
             {% if current_user.has_permission('can_manage_users') %}
-              <li class="nav-item"><a class="nav-link {% if request.endpoint in ['admin.users', 'admin.profiles', 'admin.edit_user', 'admin.edit_profile', 'admin.reset_user_password', 'admin.toggle_user'] %}active fw-bold{% endif %}" href="{{ url_for('admin.users') }}" title="Usuarios"><span class="sidebar-nav-icon"><i class="fa-solid fa-users" aria-hidden="true"></i></span><span class="sidebar-nav-label">Usuarios</span></a></li>
+              <li class="nav-item"><a class="nav-link {% if request.endpoint in ['admin.users', 'admin.profiles', 'admin.edit_user', 'admin.edit_profile', 'admin.reset_user_password', 'admin.toggle_user'] %}active fw-bold{% endif %}" href="{{ url_for('admin.users') }}" title="Usuários"><span class="sidebar-nav-icon"><i class="fa-solid fa-users" aria-hidden="true"></i></span><span class="sidebar-nav-label">Usuários</span></a></li>
             {% endif %}
             {% if current_user.has_permission('can_view_reports') %}
-              <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.reports' %}active fw-bold{% endif %}" href="{{ url_for('admin.reports') }}" title="Relatorios"><span class="sidebar-nav-icon"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span><span class="sidebar-nav-label">Relatorios</span></a></li>
+              <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.reports' %}active fw-bold{% endif %}" href="{{ url_for('admin.reports') }}" title="Relatórios"><span class="sidebar-nav-icon"><i class="fa-solid fa-chart-column" aria-hidden="true"></i></span><span class="sidebar-nav-label">Relatórios</span></a></li>
               <li class="nav-item"><a class="nav-link {% if request.endpoint in ['admin.audit_logs', 'admin.audit_detail'] %}active fw-bold{% endif %}" href="{{ url_for('admin.audit_logs') }}" title="Auditoria"><span class="sidebar-nav-icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span><span class="sidebar-nav-label">Auditoria</span></a></li>
               <li class="nav-item"><a class="nav-link {% if request.endpoint in ['admin.error_logs', 'admin.error_detail'] %}active fw-bold{% endif %}" href="{{ url_for('admin.error_logs') }}" title="Erros"><span class="sidebar-nav-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><span class="sidebar-nav-label">Erros</span></a></li>
             {% endif %}
@@ -57,7 +57,7 @@
 
         <div class="sidebar-user-summary">
           <span class="sidebar-user-avatar">{{ current_user.name[:1]|upper }}</span>
-          <span class="sidebar-user-copy"><strong>{{ current_user.name }}</strong><small>{{ current_user.profile.name if current_user.profile else 'Usuario' }}</small></span>
+          <span class="sidebar-user-copy"><strong>{{ current_user.name }}</strong><small>{{ current_user.profile.name if current_user.profile else 'Usuário' }}</small></span>
         </div>
       </aside>
     </header>

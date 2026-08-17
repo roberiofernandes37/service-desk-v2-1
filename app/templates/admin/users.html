@@ -2,7 +2,7 @@
 {% block content %}
 <section class="page-title">
   <div>
-    <h1>Usuarios e perfis</h1>
+    <h1>Usuários e perfis</h1>
     <p>Controle de acesso centralizado.</p>
   </div>
 </section>
@@ -40,10 +40,10 @@
           <div>
             <strong>{{ profile.name }}</strong>
             <span>
-              {% if profile.can_manage_users %}Usuarios{% endif %}
-              {% if profile.can_manage_settings %} Parametros{% endif %}
-              {% if profile.can_work_tickets %} Solicitacoes{% endif %}
-              {% if profile.can_view_reports %} Relatorios{% endif %}
+              {% if profile.can_manage_users %}Usuários{% endif %}
+              {% if profile.can_manage_settings %} Parâmetros{% endif %}
+              {% if profile.can_work_tickets %} Solicitações{% endif %}
+              {% if profile.can_view_reports %} Relatórios{% endif %}
               {% if profile.can_reset_data %} Criticas{% endif %}
             </span>
           </div>
@@ -57,17 +57,17 @@
 </div>
 
 <section class="panel">
-  <h2>Usuarios</h2>
+  <h2>Usuários</h2>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead class="table-light"><tr><th class="px-4">Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th class="px-4">Acoes</th></tr></thead>
+      <thead class="table-light"><tr><th class="px-4">Nome</th><th>E-mail</th><th>Perfil</th><th>Ativo</th><th class="px-4">Ações</th></tr></thead>
       <tbody>
         {% for user in users %}
           <tr>
             <td class="px-4 wrap-text">{{ user.name }}</td>
             <td class="wrap-text">{{ user.email }}</td>
             <td class="wrap-text">{{ user.profile.name }}</td>
-            <td>{{ "Sim" if user.active else "Nao" }}</td>
+            <td>{{ "Sim" if user.active else "Não" }}</td>
             <td class="px-4">
               <div class="row-actions">
                 <a class="small-button" href="{{ url_for('admin.edit_user', user_id=user.id) }}">Editar</a>
@@ -82,7 +82,7 @@
             </td>
           </tr>
         {% else %}
-          <tr><td colspan="5" class="empty text-center text-muted py-4">Nenhum usuario.</td></tr>
+          <tr><td colspan="5" class="empty text-center text-muted py-4">Nenhum usuário.</td></tr>
         {% endfor %}
       </tbody>
     </table>

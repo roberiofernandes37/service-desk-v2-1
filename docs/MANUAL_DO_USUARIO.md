@@ -1,0 +1,573 @@
+# Service Desk V2.1 — Manual do Usuário
+
+**Versão:** 2.1
+**Data de referência:** 17/08/2026
+**Público:** solicitantes, atendentes, responsáveis, gestores e administradores
+**Endereço local padrão:** http://localhost:18437
+
+## 1. Sobre este manual
+
+Este manual explica como utilizar o Service Desk V2.1 no dia a dia. Ele foi escrito para servir como material de treinamento, consulta rápida e referência para a operação dos departamentos.
+
+O sistema registra solicitações, organiza a fila de atendimento, controla responsáveis, acompanha prazos de SLA, mantém o histórico das ações e permite a troca de informações por comentários, avisos internos e e-mails opcionais.
+
+As telas e os botões disponíveis podem variar conforme o perfil e as permissões atribuídas ao usuário. Se uma opção descrita aqui não aparecer, solicite ao administrador a verificação do seu acesso.
+
+## 2. Conceitos importantes
+
+### 2.1 Solicitação ou demanda
+
+Uma solicitação, também chamada de demanda, é o registro de uma necessidade, problema, dúvida ou pedido de serviço. Cada solicitação recebe um número único, como `#25`, que deve ser usado para acompanhamento e comunicação.
+
+### 2.2 Solicitante
+
+É a pessoa que abriu a solicitação. O solicitante acompanha a evolução, pode comentar e, enquanto a demanda estiver aberta, pode editar os dados que informou.
+
+### 2.3 Responsável
+
+É o usuário que assumiu ou recebeu a demanda para atendimento. O responsável executa o trabalho, registra pausas, informa a solução e conclui a solicitação.
+
+### 2.4 Categoria
+
+Classifica o tipo de serviço ou assunto da demanda. A categoria é obrigatória e pode apresentar campos adicionais próprios, como quantidade, marca, data ou número de referência.
+
+### 2.5 SLA
+
+É o prazo definido para a demanda. O sistema mostra se ela está no prazo, vence hoje, está atrasada, pausada ou finalizada.
+
+### 2.6 Histórico
+
+É a linha do tempo das ações importantes da demanda: criação, edição, assunção, pausa, retomada, transferência, conclusão, cancelamento, reabertura e alterações de anexos.
+
+## 3. Acesso ao sistema
+
+### 3.1 Primeiro acesso
+
+1. Abra o navegador.
+2. Acesse o endereço informado pela equipe responsável. Em ambiente local, use `http://localhost:18437`.
+3. Informe seu e-mail cadastrado.
+4. Informe sua senha.
+5. Clique em **Entrar**.
+
+Não existe uma senha universal fixa no aplicativo. O administrador ou responsável pela implantação deve fornecer o primeiro acesso. Altere a senha assim que entrar pela primeira vez.
+
+### 3.2 Senha
+
+Para trocar a senha:
+
+1. Abra o menu **Perfil**.
+2. Informe a senha atual.
+3. Digite a nova senha.
+4. Repita a nova senha no campo de confirmação.
+5. Clique em **Alterar senha**.
+
+A nova senha deve possuir pelo menos oito caracteres. Não compartilhe sua senha e não a registre em documentos visíveis ou mensagens de equipe.
+
+### 3.3 Encerramento da sessão
+
+Use o menu **Sair** quando terminar o trabalho, especialmente em computadores compartilhados. O botão **Voltar** serve para navegação dentro do sistema e não encerra a sessão.
+
+## 4. Navegação e menu lateral
+
+Depois do login, o menu lateral apresenta os recursos liberados para seu usuário:
+
+| Opção | Finalidade |
+|---|---|
+| **Painel** | Visão geral da fila, indicadores, prazos e últimas solicitações. |
+| **Solicitações** | Lista operacional com pesquisa, filtros, paginação e exportação CSV. |
+| **Kanban** | Organização visual das demandas por status. |
+| **Nova** | Abertura de uma nova solicitação. |
+| **Parâmetros** | Categorias, campos de categoria, filiais e configuração de e-mail. |
+| **Usuários** | Cadastro de usuários, perfis e permissões. |
+| **Relatórios** | Indicadores operacionais e listagens resumidas. |
+| **Auditoria** | Registro das alterações e ações relevantes. |
+| **Erros** | Consulta de falhas registradas para diagnóstico. |
+| **Backup** | Configuração, criação, teste e restauração de cópias. |
+| **Voltar** | Retorna com segurança ao painel ou à tela anterior de trabalho. |
+| **Avisos** | Notificações internas relacionadas às demandas. |
+| **Perfil** | Senha e preferências de avisos por e-mail. |
+| **Sair** | Encerra a sessão do usuário. |
+
+O menu pode ser recolhido pelo botão de seta no cabeçalho. No modo recolhido, os ícones continuam disponíveis; passe o cursor sobre eles para identificar a opção. A preferência de visualização é mantida no navegador. Em telas pequenas, use o botão de menu para abrir ou fechar a navegação.
+
+## 5. Painel de controle
+
+O **Painel** resume a situação operacional da equipe. Os cartões superiores mostram quantidades como:
+
+- demandas atrasadas;
+- demandas abertas na fila;
+- demandas assumidas;
+- demandas pausadas;
+- demandas concluídas.
+
+Os gráficos ajudam a visualizar a fila por solicitante e a carga de trabalho por responsável. A seção de últimas solicitações apresenta os registros mais recentes, seus status, prioridades, solicitantes, responsáveis, prazos e campos da categoria.
+
+Para abrir uma demanda a partir do painel, clique em **Abrir**. Para acompanhar a fila completa, acesse **Solicitações** ou **Kanban** pelo menu lateral.
+
+## 6. Abrindo uma nova solicitação
+
+### 6.1 Passo a passo
+
+1. Acesse **Nova**.
+2. Preencha o **Título** de forma objetiva. Exemplo: `Erro ao emitir pedido de compra`.
+3. Descreva o problema ou pedido no campo **Descrição**. Informe contexto, mensagem de erro, impacto, local e o que já foi tentado.
+4. Selecione a **Prioridade**:
+   - **Baixa:** não impede o trabalho e pode aguardar;
+   - **Média:** requer atendimento planejado;
+   - **Alta:** causa impacto relevante ou afeta uma atividade importante;
+   - **Urgente:** impede uma operação crítica ou afeta muitas pessoas.
+5. Selecione uma **Categoria**. Esse campo é obrigatório.
+6. Preencha os campos adicionais exibidos pela categoria, quando houver.
+7. Selecione a **Filial**, quando aplicável. Use **Geral** quando a solicitação não estiver vinculada a uma filial específica.
+8. Informe o **Prazo SLA** conforme a orientação da empresa.
+9. Adicione anexos, se necessário.
+10. Revise as informações e clique em **Salvar solicitação**.
+
+Após o salvamento, o sistema apresenta o número da demanda e abre a tela de detalhes. Anote esse número para acompanhar o atendimento.
+
+### 6.2 Categoria obrigatória
+
+Não é possível salvar uma solicitação sem categoria. Se a lista estiver vazia, informe o problema ao administrador: pode não haver uma categoria ativa cadastrada.
+
+Quando uma categoria possui campos obrigatórios, o sistema indica os campos que precisam ser preenchidos. A demanda só será criada depois que todos eles forem informados.
+
+### 6.3 Como escrever uma boa descrição
+
+Uma descrição completa reduz o tempo de atendimento. Prefira o seguinte formato:
+
+~~~text
+O que aconteceu:
+Quando começou:
+Quem ou qual processo foi afetado:
+Mensagem de erro ou comportamento observado:
+Passos que causam o problema:
+Resultado esperado:
+Resultado atual:
+~~~
+
+Evite títulos genéricos como `Problema`, `Ajuda` ou `Urgente`. O título deve permitir identificar o assunto sem abrir a demanda.
+
+## 7. Anexos
+
+### 7.1 Anexos na abertura
+
+É possível anexar vários arquivos na mesma solicitação. Selecione todos os arquivos antes de salvar e aguarde a confirmação do sistema. Não feche a tela durante o envio.
+
+São aceitos os formatos:
+
+`TXT`, `PDF`, `PNG`, `JPG`, `JPEG`, `CSV`, `XLSX`, `XLS`, `DOC`, `DOCX`, `XML`, `PPT` e `PPTX`.
+
+O limite padrão configurado para o envio é de 50 MB. O administrador pode alterar esse limite na configuração do ambiente.
+
+### 7.2 Anexos em uma solicitação existente
+
+Enquanto a demanda estiver com status **Aberta**, o solicitante ou um gestor autorizado pode clicar em **Editar** e adicionar mais arquivos. Os novos anexos são somados aos existentes; eles não substituem os arquivos anteriores.
+
+Na lista e no Kanban, o ícone de clipe ao lado do título indica que a demanda possui anexo ativo.
+
+### 7.3 Download e exclusão
+
+Na tela de detalhes:
+
+1. Localize a seção **Anexos**.
+2. Clique em **Baixar** para obter o arquivo.
+3. Para remover um anexo durante a fase aberta, clique em **Excluir** e confirme.
+
+A exclusão retira o anexo da visualização normal e registra a ação no histórico. Ela só aparece para usuários autorizados e não deve ser usada para apagar evidências sem necessidade.
+
+### 7.4 Arquivos finais
+
+Ao concluir uma demanda, o responsável pode anexar arquivos finais, como relatório, evidência da correção, planilha revisada ou procedimento executado. Esses arquivos ficam identificados como **Arquivo final**.
+
+Não envie senhas, tokens, dados pessoais desnecessários ou informações sigilosas em anexos. Siga a política de segurança da empresa.
+
+## 8. Editando uma solicitação aberta
+
+O botão **Editar** só aparece enquanto a demanda estiver com status **Aberta** e somente para:
+
+- o solicitante que criou a demanda; ou
+- um usuário com permissão de gestão de parâmetros.
+
+Na edição, podem ser alterados o título, descrição, prioridade, categoria, filial, prazo, campos adicionais e anexos iniciais.
+
+Depois que a demanda for assumida e passar para **Em Andamento**, o solicitante não poderá mais editar os dados principais. Use comentários para complementar informações e peça ao responsável ou gestor que avalie a necessidade de ajuste.
+
+## 9. Tela de detalhes da demanda
+
+A tela de detalhes reúne todas as informações da solicitação:
+
+- número, título e status;
+- prioridade e situação do SLA;
+- solicitante e responsável;
+- categoria e filial;
+- data de criação, atualização e prazo;
+- tempo pausado e tempo em atendimento;
+- descrição e solução registrada;
+- dados adicionais da categoria;
+- anexos;
+- comentários;
+- ações disponíveis;
+- histórico da demanda.
+
+Leia o **Resumo operacional** antes de executar uma ação. O bloco **Ações** mostra somente as opções permitidas para o status atual e para o seu perfil.
+
+## 10. Fluxo de atendimento
+
+O fluxo padrão é:
+
+~~~text
+Aberta -> Em Andamento -> Pausada -> Em Andamento -> Concluida
+   |            |              |
+   +----------> Cancelada      +--> Cancelada
+
+Concluida -> Em Andamento (Reabrir, quando autorizado)
+~~~
+
+### 10.1 Status Aberta
+
+Significa que a demanda foi registrada e aguarda atendimento. Um usuário habilitado para trabalhar solicitações verá o botão **Assumir**.
+
+Ao assumir:
+
+- o status muda para **Em Andamento**;
+- o usuário logado passa a ser o responsável;
+- a ação `Demanda assumida` é registrada no histórico;
+- os usuários relacionados recebem aviso interno conforme a regra do sistema.
+
+### 10.2 Status Em Andamento
+
+Indica que o responsável está trabalhando na demanda. Os controles principais são **Pausar** e **Concluir**. Usuários autorizados também podem transferir a demanda.
+
+#### Pausar
+
+Use quando o atendimento depender de informação, aprovação, peça, fornecedor ou retorno do solicitante.
+
+1. Clique em **Pausar**.
+2. Informe uma observação obrigatória, como `Aguardando retorno do usuário`.
+3. Confirme.
+
+O status muda para **Pausada**. O tempo da pausa deixa de contar como tempo ativo e o SLA fica congelado enquanto a demanda estiver pausada.
+
+#### Concluir
+
+Use somente quando a solução tiver sido aplicada ou o atendimento estiver formalmente encerrado.
+
+1. Clique em **Concluir**.
+2. Informe uma observação obrigatória descrevendo a solução técnica aplicada.
+3. Adicione arquivos finais, se forem necessários.
+4. Confirme.
+
+O status muda para **Concluída**, o tempo de atendimento é encerrado, a solução é gravada e a ação aparece no histórico.
+
+### 10.3 Status Pausada
+
+Indica que o atendimento está aguardando uma condição externa. O botão disponível é **Retomar**.
+
+Ao retomar, o status volta para **Em Andamento**. O tempo que a demanda ficou pausada é registrado e o prazo é ajustado para preservar o período de congelamento.
+
+### 10.4 Status Concluída
+
+Indica que a solução foi registrada. Uma demanda concluída pode ser **Reaberta** por usuário autorizado quando o problema voltar a ocorrer ou quando a solução não for suficiente.
+
+Ao reabrir, o status retorna para **Em Andamento** e a demanda volta a exigir acompanhamento.
+
+### 10.5 Status Cancelada
+
+Indica que a demanda foi encerrada sem conclusão do atendimento, por exemplo, por duplicidade, desistência ou solicitação indevida. O cancelamento exige observação e é uma ação crítica.
+
+Uma demanda cancelada não possui novas ações operacionais disponíveis no fluxo normal.
+
+## 11. Comentários e comunicação
+
+Use a seção **Comentários** para registrar informações relacionadas à demanda. Um bom comentário deve ser objetivo e conter apenas informações úteis para o atendimento.
+
+Exemplos:
+
+- `Solicitante confirmou que o erro ocorre apenas na filial Norte.`
+- `Aplicada a atualização do componente e realizado novo teste.`
+- `Aguardando aprovação do gestor para alterar o parâmetro.`
+
+Para comentar:
+
+1. Abra a demanda.
+2. Digite a mensagem.
+3. Clique em **Enviar**.
+
+O comentário fica registrado com nome do autor e data/hora. Usuários relacionados recebem aviso interno; o envio por e-mail depende das preferências configuradas.
+
+Não utilize comentários para compartilhar senhas ou informações que deveriam estar em canal restrito.
+
+## 12. Transferência de responsável
+
+A transferência está disponível para usuários autorizados quando a demanda está **Em Andamento**.
+
+1. Escolha o novo responsável.
+2. Informe uma observação, se necessário.
+3. Clique em **Transferir**.
+
+A troca fica no histórico e o novo responsável recebe aviso interno. Use a observação para explicar o motivo e indicar o próximo passo.
+
+## 13. Solicitações e filtros
+
+A tela **Solicitações** é a visão operacional em formato de tabela. Ela apresenta ID, título, status, prioridade, solicitante, responsável, campos da categoria, prazo e ação para abrir.
+
+### 13.1 Pesquisa e filtros
+
+Você pode combinar os seguintes recursos:
+
+- pesquisa por título ou descrição;
+- status;
+- prioridade;
+- situação do prazo;
+- ordenação por mais recentes, prazo mais próximo, mais antigas ou prioridade;
+- categoria;
+- filial;
+- solicitante;
+- responsável.
+
+Também existem atalhos para **Todas**, **Minha fila**, **Minhas solicitações**, **Sem responsável**, **Vencem hoje** e **Atrasadas**.
+
+### 13.2 Aplicar e limpar
+
+1. Preencha os filtros desejados.
+2. Clique em **Filtrar**.
+3. Para retornar à visão completa, clique em **Limpar filtros**.
+
+O título pode ocupar mais de uma linha. Isso é esperado e evita que textos longos cubram as demais colunas.
+
+### 13.3 Exportar CSV
+
+Na tela **Solicitações**, clique em **Exportar CSV** para baixar os registros que correspondem aos filtros atuais. Use o arquivo para análises, conferências ou relatórios locais e trate-o como dado corporativo.
+
+## 14. Visão Kanban
+
+A tela **Kanban** organiza as demandas em colunas por status:
+
+- **Abertas**;
+- **Em Andamento**;
+- **Pausadas**;
+- **Concluídas**;
+- **Canceladas**.
+
+Os filtros ficam no painel superior. Depois de filtrar, cada coluna mostra a quantidade correspondente e os cartões das demandas.
+
+Use o Kanban para entender rapidamente onde a fila está concentrada. Para consultar muitos campos simultaneamente, prefira a tela de Solicitações.
+
+Os cartões destacam prioridade, solicitante, responsável, prazo e indicador de anexo. Em demandas pausadas, observe que o SLA está congelado. Demandas concluídas ficam visualmente em segundo plano para destacar o trabalho pendente.
+
+## 15. Avisos internos
+
+O menu **Avisos** reúne notificações de demandas relacionadas ao usuário. Os avisos podem indicar:
+
+- nova solicitação disponível para atendimento;
+- edição de uma demanda;
+- mudança de status;
+- transferência de responsável;
+- novo comentário.
+
+Clique em **Abrir** quando o aviso estiver associado a uma demanda. Use **Marcar todos como lidos** depois de revisar a fila.
+
+Avisos internos continuam funcionando mesmo quando o usuário desativa o recebimento de e-mails.
+
+## 16. Preferências de e-mail do usuário
+
+Cada usuário pode escolher quais eventos deseja receber por e-mail:
+
+- demanda pausada;
+- demanda concluída;
+- demanda reaberta;
+- demanda cancelada;
+- novo comentário.
+
+Para configurar:
+
+1. Acesse **Perfil**.
+2. Marque ou desmarque **Receber avisos por e-mail**.
+3. Se o recebimento estiver ativo, selecione os eventos desejados.
+4. Clique em **Salvar preferências**.
+
+A criação e a atribuição de demandas não enviam e-mail automático na configuração atual, reduzindo o excesso de mensagens. As notificações internas continuam sendo usadas para manter a equipe informada.
+
+Se o e-mail esperado não chegar, verifique primeiro as preferências do perfil e depois solicite ao administrador que valide a configuração SMTP.
+
+## 17. Recursos administrativos
+
+As opções seguintes aparecem apenas para usuários com permissões específicas. Alterações administrativas afetam outros usuários e devem ser feitas com critério.
+
+### 17.1 Parâmetros
+
+Em **Parâmetros**, o administrador pode:
+
+- criar, editar, ativar e desativar categorias;
+- criar campos dinâmicos de texto, número ou data;
+- definir campos obrigatórios da categoria;
+- criar, editar, ativar e desativar filiais;
+- abrir a configuração de e-mail.
+
+Desativar uma categoria impede novas solicitações nessa categoria, mas não deve apagar o histórico das demandas já registradas.
+
+Ao criar ou editar campos, use nomes claros e evite renomear um campo de forma que confunda valores antigos. Antes de alterar uma categoria em produção, alinhe a mudança com os departamentos que a utilizam.
+
+### 17.2 Usuários e perfis
+
+Em **Usuários**, é possível cadastrar usuários, ativar ou desativar contas, alterar perfil e redefinir senha. Também é possível criar perfis de acesso.
+
+As permissões disponíveis são:
+
+| Permissão | Acesso principal |
+|---|---|
+| **Gerir usuários** | Usuários e perfis. |
+| **Gerir parâmetros** | Categorias, filiais e parâmetros do sistema. |
+| **Trabalhar solicitações** | Assumir, pausar, retomar e concluir demandas. |
+| **Ver relatórios** | Relatórios, auditoria e erros. |
+| **Operações críticas** | Cancelamentos administrativos e backups. |
+
+Conceda somente as permissões necessárias ao trabalho. Não desative o próprio usuário logado nem remova de si a permissão indispensável para administrar usuários.
+
+### 17.3 Relatórios
+
+Use **Relatórios** para analisar a distribuição por status, prioridades, categorias, solicitantes e responsáveis. Relatórios auxiliam reuniões de acompanhamento e identificação de gargalos.
+
+Antes de interpretar os números, confirme se os filtros e o período considerados estão corretos. Uma demanda pausada não deve ser interpretada da mesma forma que uma demanda ativa.
+
+### 17.4 Auditoria
+
+Em **Auditoria**, consulte quem realizou ações relevantes, quando a ação ocorreu e qual entidade foi alterada. Use filtros para localizar uma demanda ou período.
+
+A auditoria é útil para rastreabilidade e deve ser preservada. Não divulgue exportações de auditoria fora dos canais autorizados.
+
+### 17.5 Erros
+
+Em **Erros**, o administrador pode consultar falhas registradas, filtrar pendências, abrir detalhes e marcar diagnósticos como resolvidos. Ao comunicar um problema, informe o horário, a tela, o usuário afetado e a mensagem exibida.
+
+Não repita uma operação crítica várias vezes se houver erro. Primeiro registre a mensagem e avise o responsável técnico.
+
+### 17.6 Backup
+
+Em **Backup**, usuários autorizados podem configurar horários, quantidade de cópias, inclusão de anexos e logs, criar cópia manual, testar uma cópia e iniciar restauração.
+
+Uma restauração substitui dados atuais e exige confirmação explícita. Deve ser realizada somente com autorização e, preferencialmente, após a criação de uma cópia de segurança atual.
+
+## 18. Boas práticas de uso
+
+- Abra uma demanda por assunto, evitando misturar problemas diferentes no mesmo registro.
+- Use títulos curtos, específicos e pesquisáveis.
+- Escolha a prioridade pelo impacto real, não apenas pela urgência percebida.
+- Selecione a categoria correta para que os indicadores e campos adicionais permaneçam confiáveis.
+- Informe prazos coerentes com a capacidade da equipe.
+- Registre pausas com uma justificativa clara.
+- Ao concluir, descreva a solução de forma que outra pessoa consiga entendê-la.
+- Use comentários para atualizações e não altere o histórico por meios externos.
+- Anexe evidências somente quando forem necessárias.
+- Revise anexos antes de enviá-los.
+- Não compartilhe credenciais em títulos, descrições, comentários ou arquivos.
+- Use **Limpar filtros** quando a lista parecer incompleta.
+- Ao terminar, encerre a sessão pelo menu **Sair**.
+
+## 19. Solução de problemas comuns
+
+| Problema | Verificação e ação recomendada |
+|---|---|
+| Não consigo entrar | Confirme o e-mail, a senha e se o usuário está ativo. Solicite redefinição ao administrador. |
+| Não vejo um menu | O perfil pode não ter a permissão correspondente. |
+| Não consigo abrir uma demanda | Verifique se você é solicitante, responsável ou possui permissão de atendimento, gestão ou relatórios. |
+| Não aparece o botão Editar | A demanda provavelmente não está **Aberta** ou você não é o solicitante/gestor. |
+| Não consigo salvar uma demanda | Confirme categoria, descrição, título, prazo e campos obrigatórios. Verifique também o formato dos anexos. |
+| A categoria está vazia | Solicite ao administrador que cadastre ou ative uma categoria. |
+| O anexo não aparece | Atualize a tela de detalhes e verifique se o envio terminou. Confirme se o arquivo possui extensão permitida. |
+| Não consigo excluir um anexo | A exclusão só ocorre em demanda aberta e para usuário autorizado. |
+| O filtro não mostra registros | Clique em **Limpar filtros** e aplique novamente os critérios. |
+| O SLA aparece como pausado | A demanda está no status **Pausada**; o tempo volta a correr após **Retomar**. |
+| Não recebi e-mail | Verifique Perfil, eventos selecionados, caixa de spam e peça ao administrador para testar o SMTP. |
+| A tela exibiu uma mensagem de erro | Anote a mensagem, a tela, o horário e o número da demanda. Não repita ações críticas sem orientação. |
+
+## 20. Checklist do solicitante
+
+Antes de abrir:
+
+- [ ] O título identifica claramente o pedido?
+- [ ] A descrição informa contexto e impacto?
+- [ ] A prioridade corresponde ao impacto?
+- [ ] A categoria está correta?
+- [ ] Os campos obrigatórios da categoria foram preenchidos?
+- [ ] O prazo foi informado corretamente?
+- [ ] Os anexos estão no formato permitido e sem dados indevidos?
+
+Depois de abrir:
+
+- [ ] O número da demanda foi anotado?
+- [ ] As informações complementares foram registradas em comentários?
+- [ ] O status e o prazo estão sendo acompanhados?
+- [ ] A solução foi confirmada antes de considerar o atendimento encerrado?
+
+## 21. Checklist do responsável pelo atendimento
+
+- [ ] Revisar a fila e os prazos no Painel, Solicitações ou Kanban.
+- [ ] Assumir a demanda somente quando puder iniciar o atendimento.
+- [ ] Conferir descrição, categoria, prioridade e anexos.
+- [ ] Registrar comentários relevantes.
+- [ ] Pausar somente com justificativa obrigatória.
+- [ ] Retomar assim que a dependência externa for resolvida.
+- [ ] Concluir com descrição clara da solução.
+- [ ] Anexar evidências ou arquivos finais quando necessário.
+- [ ] Transferir com observação e contexto suficiente.
+
+## 22. Checklist do administrador
+
+- [ ] Manter usuários ativos e perfis revisados.
+- [ ] Verificar categorias e campos obrigatórios.
+- [ ] Manter filiais atualizadas.
+- [ ] Conferir preferências e configuração SMTP.
+- [ ] Acompanhar erros pendentes.
+- [ ] Revisar auditoria quando houver alteração sensível.
+- [ ] Confirmar que backups recentes foram criados e testados.
+- [ ] Evitar permissões maiores que as necessárias.
+- [ ] Registrar mudanças administrativas importantes.
+
+## 23. Glossário rápido
+
+| Termo | Significado |
+|---|---|
+| **Aberta** | Demanda criada e aguardando atendimento. |
+| **Em Andamento** | Demanda assumida e em execução. |
+| **Pausada** | Atendimento temporariamente interrompido por uma dependência. |
+| **Concluída** | Solução registrada e atendimento encerrado. |
+| **Cancelada** | Demanda encerrada sem conclusão operacional. |
+| **SLA** | Prazo ou compromisso de atendimento. |
+| **Fila** | Conjunto de demandas aguardando ou em atendimento. |
+| **Kanban** | Visão das demandas distribuídas por status. |
+| **Anexo inicial** | Arquivo enviado na criação ou edição da demanda aberta. |
+| **Arquivo final** | Arquivo anexado no momento da conclusão. |
+| **Perfil** | Conjunto de permissões de um usuário. |
+| **Aviso interno** | Notificação exibida dentro do sistema. |
+| **SMTP** | Serviço usado para envio de e-mails. |
+
+## 24. Quando procurar o suporte
+
+Procure o administrador ou suporte técnico quando:
+
+- o sistema não abrir;
+- vários usuários não conseguirem acessar;
+- uma solicitação desaparecer da fila sem explicação;
+- dados ou anexos não aparecerem após confirmação;
+- houver erro repetido ao salvar ou alterar status;
+- o envio de e-mail falhar mesmo com as preferências corretas;
+- for necessário restaurar um backup;
+- houver suspeita de acesso indevido.
+
+Ao solicitar ajuda, envie o número da demanda, usuário afetado, tela, data/hora aproximada, ação executada e mensagem exibida. Nunca envie a senha junto com o relato.
+
+## 25. Resumo do fluxo diário
+
+~~~text
+Entrar
+  -> consultar Painel ou Solicitações
+  -> abrir uma demanda existente ou criar Nova solicitação
+  -> acompanhar comentários, anexos, responsável e SLA
+  -> executar a ação permitida para o status
+  -> registrar observações e solução
+  -> revisar Avisos
+  -> sair do sistema
+~~~
+
+O uso consistente desse fluxo mantém a fila organizada, melhora a rastreabilidade e fornece dados confiáveis para os relatórios e para a melhoria contínua dos departamentos.

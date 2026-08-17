@@ -31,7 +31,7 @@ def save_upload(file_storage, ticket_id, label):
     if not file_storage or not file_storage.filename:
         return None
     if not allowed_file(file_storage.filename):
-        raise BadRequest("Formato de arquivo nao permitido.")
+        raise BadRequest("Formato de arquivo não permitido.")
 
     original = secure_filename(file_storage.filename)
     now = datetime.now(timezone.utc)

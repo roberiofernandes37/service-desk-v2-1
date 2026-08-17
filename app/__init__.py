@@ -21,6 +21,29 @@ from .services.ticket_workflow import active_seconds
 from .services.mail_service import apply_mail_config
 
 
+STATUS_LABELS = {
+    "Aberta": "Aberta",
+    "Em Andamento": "Em andamento",
+    "Pausada": "Pausada",
+    "Concluida": "Concluída",
+    "Cancelada": "Cancelada",
+}
+PRIORITY_LABELS = {
+    "Baixa": "Baixa",
+    "Media": "Média",
+    "Alta": "Alta",
+    "Urgente": "Urgente",
+}
+
+
+def display_status(value):
+    return STATUS_LABELS.get(value, value)
+
+
+def display_priority(value):
+    return PRIORITY_LABELS.get(value, value)
+
+
 def create_app(config_object=None):
     load_dotenv()
     app = Flask(__name__)
@@ -28,6 +51,9 @@ def create_app(config_object=None):
     app.config.from_object(config_class)
     app.config.from_prefixed_env()
     config_class.init_app(app)
+
+    app.jinja_env.filters["status_label"] = display_status
+    app.jinja_env.filters["priority_label"] = display_priority
 
     db.init_app(app)
     migrate.init_app(app, db)

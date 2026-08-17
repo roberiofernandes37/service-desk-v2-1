@@ -3,7 +3,7 @@
 <section class="page-title">
   <div>
     <h1>Auditoria</h1>
-    <p>Ultimas acoes registradas no sistema.</p>
+    <p>Últimas ações registradas no sistema.</p>
   </div>
   <div class="title-actions">
     <a class="btn btn-primary fw-bold shadow-sm" href="{{ url_for('admin.export_audit_csv', entity=filters.entity, action=filters.action, user_id=filters.user_id or '', entity_id=filters.entity_id or '') }}"><i class="fa-solid fa-file-csv me-2"></i>Exportar CSV</a>
@@ -18,13 +18,13 @@
     {% endfor %}
   </select>
   <select name="action">
-    <option value="">Todas acoes</option>
+    <option value="">Todas as ações</option>
     {% for action in actions %}
       <option value="{{ action }}" {% if filters.action == action %}selected{% endif %}>{{ action }}</option>
     {% endfor %}
   </select>
   <select name="user_id">
-    <option value="">Todos usuarios</option>
+    <option value="">Todos os usuários</option>
     {% for user in users %}
       <option value="{{ user.id }}" {% if filters.user_id == user.id %}selected{% endif %}>{{ user.name }}</option>
     {% endfor %}
@@ -36,17 +36,17 @@
 <section class="panel">
   <div class="panel-head">
     <h2>{{ pagination.total }} registro{{ "" if pagination.total == 1 else "s" }}</h2>
-    <span class="muted">Pagina {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
+    <span class="muted">Página {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
           <th class="px-4">Data</th>
-          <th>Usuario</th>
+          <th>Usuário</th>
           <th>Entidade</th>
           <th>ID</th>
-          <th>Acao</th>
+          <th>Ação</th>
           <th>IP</th>
           <th class="px-4"></th>
         </tr>
@@ -78,9 +78,9 @@
       {% endif %}
       <span>{{ pagination.first }}-{{ pagination.last }} de {{ pagination.total }}</span>
       {% if pagination.has_next %}
-        <a class="button" href="{{ url_for('admin.audit_logs', page=pagination.next_num, entity=filters.entity, action=filters.action, user_id=filters.user_id or '', entity_id=filters.entity_id or '') }}">Proxima</a>
+        <a class="button" href="{{ url_for('admin.audit_logs', page=pagination.next_num, entity=filters.entity, action=filters.action, user_id=filters.user_id or '', entity_id=filters.entity_id or '') }}">Próxima</a>
       {% else %}
-        <span class="button disabled">Proxima</span>
+        <span class="button disabled">Próxima</span>
       {% endif %}
     </nav>
   {% endif %}

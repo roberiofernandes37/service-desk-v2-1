@@ -74,7 +74,7 @@ def test_audit_csv_contains_metadata_and_payload(app):
 
         csv_text = build_audit_csv([log])
 
-        assert "ID;Data;Usuario;Entidade;ID Entidade;Acao;IP;Antes;Depois" in csv_text
+        assert "ID;Data;Usuário;Entidade;ID da entidade;Ação;IP;Antes;Depois" in csv_text
         assert "Admin;Ticket;7;updated;127.0.0.1" in csv_text
         assert '""status"": ""Aberta""' in csv_text
         assert '""status"": ""Em Andamento""' in csv_text

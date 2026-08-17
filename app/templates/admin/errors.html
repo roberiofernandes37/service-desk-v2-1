@@ -3,7 +3,7 @@
 <section class="page-title">
   <div>
     <h1>Erros do sistema</h1>
-    <p>Diagnostico tecnico para manutencao e analise de falhas.</p>
+    <p>Diagnóstico técnico para manutenção e análise de falhas.</p>
   </div>
   <div class="title-actions">
     <a class="btn btn-primary fw-bold shadow-sm" href="{{ url_for('admin.export_error_csv', q=filters.q, error_type=filters.error_type, user_id=filters.user_id or '', resolved=filters.resolved) }}"><i class="fa-solid fa-file-csv me-2"></i>Exportar CSV</a>
@@ -19,7 +19,7 @@
     {% endfor %}
   </select>
   <select name="user_id">
-    <option value="">Todos usuarios</option>
+    <option value="">Todos os usuários</option>
     {% for user in users %}
       <option value="{{ user.id }}" {% if filters.user_id == user.id %}selected{% endif %}>{{ user.name }}</option>
     {% endfor %}
@@ -35,7 +35,7 @@
 <section class="panel">
   <div class="panel-head">
     <h2>{{ pagination.total }} erro{{ "" if pagination.total == 1 else "s" }}</h2>
-    <span class="muted">Pagina {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
+    <span class="muted">Página {{ pagination.page }} de {{ pagination.pages or 1 }}</span>
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
@@ -43,7 +43,7 @@
         <tr>
           <th class="px-4">Data</th>
           <th>Status</th>
-          <th>Usuario</th>
+          <th>Usuário</th>
           <th>Tipo</th>
           <th>Mensagem</th>
           <th>Rota</th>
@@ -77,9 +77,9 @@
       {% endif %}
       <span>{{ pagination.first }}-{{ pagination.last }} de {{ pagination.total }}</span>
       {% if pagination.has_next %}
-        <a class="button" href="{{ url_for('admin.error_logs', page=pagination.next_num, q=filters.q, error_type=filters.error_type, user_id=filters.user_id or '', resolved=filters.resolved) }}">Proxima</a>
+        <a class="button" href="{{ url_for('admin.error_logs', page=pagination.next_num, q=filters.q, error_type=filters.error_type, user_id=filters.user_id or '', resolved=filters.resolved) }}">Próxima</a>
       {% else %}
-        <span class="button disabled">Proxima</span>
+        <span class="button disabled">Próxima</span>
       {% endif %}
     </nav>
   {% endif %}

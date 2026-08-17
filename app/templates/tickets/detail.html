@@ -3,7 +3,7 @@
 <section class="page-title detail-title">
   <div>
     <h1>#{{ ticket.id }} - {{ ticket.title }}</h1>
-    <p>{{ ticket.status }} - {{ ticket.priority }} - prazo {{ ticket.due_at.strftime('%d/%m/%Y') }}</p>
+    <p>{{ ticket.status|status_label }} - {{ ticket.priority|priority_label }} - prazo {{ ticket.due_at.strftime('%d/%m/%Y') }}</p>
   </div>
   {% if ticket.status == "Aberta" and (ticket.requester_id == current_user.id or current_user.has_permission('can_manage_settings')) %}
     <div class="title-actions">
@@ -20,7 +20,7 @@
     <dl class="detail-summary">
       <div>
         <dt>Status</dt>
-        <dd><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></dd>
+        <dd><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status|status_label }}</span></dd>
       </div>
       <div>
         <dt>SLA</dt>
@@ -31,7 +31,7 @@
         <dd>{{ ticket.requester.name if ticket.requester else "-" }}</dd>
       </div>
       <div>
-        <dt>Responsavel</dt>
+        <dt>Responsável</dt>
         <dd>{{ ticket.assignee.name if ticket.assignee else "-" }}</dd>
       </div>
       <div>
@@ -64,7 +64,7 @@
       </div>
       {% if ticket.completed_at %}
         <div>
-          <dt>Concluida em</dt>
+          <dt>Concluída em</dt>
           <dd>{{ ticket.completed_at.strftime('%d/%m/%Y %H:%M') }}</dd>
         </div>
       {% endif %}
@@ -74,7 +74,7 @@
     <p class="preline">{{ ticket.description }}</p>
     {% if ticket.resolution_note %}
       <hr>
-      <h2>Solucao registrada</h2>
+      <h2>Solução registrada</h2>
       <p class="preline">{{ ticket.resolution_note }}</p>
     {% endif %}
     {% if ticket.custom_data %}
@@ -124,7 +124,7 @@
     </section>
 
     <section class="panel comments-panel">
-      <h2>Comentarios</h2>
+      <h2>Comentários</h2>
       <form method="post" action="{{ url_for('tickets.comment', ticket_id=ticket.id) }}" class="comment-form">
         {{ comment_form.hidden_tag() }}
         {{ comment_form.body(placeholder="Escreva uma mensagem") }}
@@ -138,7 +138,7 @@
             <p>{{ comment.body }}</p>
           </article>
         {% else %}
-          <p class="muted">Nenhum comentario ainda.</p>
+          <p class="muted">Nenhum comentário ainda.</p>
         {% endfor %}
       </div>
     </section>
@@ -146,7 +146,7 @@
 
   <aside class="detail-side">
     <section class="panel action-panel">
-      <h2>Acoes</h2>
+      <h2>Ações</h2>
       {% set actions = [] %}
       {% if ticket.status == "Aberta" %}
         {% if current_user.has_permission('can_work_tickets') or current_user.has_permission('can_manage_settings') %}
@@ -176,14 +176,14 @@
 
       {% if can_cancel and ticket.status not in ["Concluida", "Cancelada"] %}
         <details class="critical-actions">
-          <summary class="small-button">Acoes criticas</summary>
+          <summary class="small-button">Ações críticas</summary>
           <button type="button" class="action-cancelar" data-bs-toggle="modal" data-bs-target="#ticketActionModal" data-action="cancelar" data-label="Cancelar">Cancelar demanda</button>
         </details>
       {% endif %}
 
       {% if can_transfer and ticket.status == "Em Andamento" and transfer_form.assignee_id.choices %}
         <hr>
-        <h2>Transferir responsavel</h2>
+        <h2>Transferir responsável</h2>
         <form method="post" action="{{ url_for('tickets.transfer', ticket_id=ticket.id) }}" class="stack compact">
           {{ transfer_form.hidden_tag() }}
           <label>{{ transfer_form.assignee_id.label }}{{ transfer_form.assignee_id() }}</label>
@@ -194,18 +194,18 @@
     </section>
 
     <section class="panel timeline-panel">
-      <h2>Historico</h2>
+      <h2>Histórico</h2>
       {% set action_labels = {
         "assumir": "Demanda assumida",
         "pausar": "Demanda pausada",
         "retomar": "Atendimento retomado",
-        "concluir": "Demanda concluida",
+        "concluir": "Demanda concluída",
         "cancelar": "Demanda cancelada",
         "reabrir": "Demanda reaberta",
-        "transferida": "Responsavel transferido",
+        "transferida": "Responsável transferido",
         "editada": "Demanda editada",
         "anexo_adicionado": "Anexo adicionado",
-        "anexo_excluido": "Anexo excluido"
+        "anexo_excluido": "Anexo excluído"
       } %}
       <ol class="history">
         {% for item in ticket.history %}
@@ -215,7 +215,7 @@
             {% if item.note %}<p>{{ item.note }}</p>{% endif %}
           </li>
         {% else %}
-          <li>Nenhum historico.</li>
+          <li>Nenhum histórico.</li>
         {% endfor %}
       </ol>
     </section>
@@ -226,7 +226,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="ticketActionModalTitle">Registrar acao</h5>
+        <h5 class="modal-title" id="ticketActionModalTitle">Registrar ação</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <form method="post" action="{{ url_for('tickets.action', ticket_id=ticket.id) }}" enctype="multipart/form-data">
@@ -234,7 +234,7 @@
         <input type="hidden" name="action" id="ticketActionCode">
         <div class="modal-body">
           <p class="muted" id="ticketActionDescription"></p>
-          <label for="ticketActionNote" class="form-label fw-bold">Observacao</label>
+          <label for="ticketActionNote" class="form-label fw-bold">Observação</label>
           <textarea class="form-control" name="note" id="ticketActionNote" rows="5" required></textarea>
           <div id="ticketFinalFileGroup" class="mt-3" hidden>
             <label for="ticketFinalFile" class="form-label fw-bold">Arquivos finais (opcional)</label>
@@ -266,7 +266,7 @@
       document.getElementById('ticketActionDescription').textContent = descriptions[action] || '';
       document.getElementById('ticketActionCode').value = action;
       document.getElementById('ticketActionNote').value = '';
-      document.getElementById('ticketActionNote').placeholder = descriptions[action] || 'Informe uma observacao';
+      document.getElementById('ticketActionNote').placeholder = descriptions[action] || 'Informe uma observação';
       document.getElementById('ticketFinalFileGroup').hidden = action !== 'concluir';
       document.getElementById('ticketFinalFile').disabled = action !== 'concluir';
       document.getElementById('ticketActionSubmit').textContent = label;

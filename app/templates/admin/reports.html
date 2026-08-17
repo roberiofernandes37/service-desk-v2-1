@@ -2,8 +2,8 @@
 {% block content %}
 <section class="page-title">
   <div>
-    <h1>Relatorios operacionais</h1>
-    <p>SLA, volume e distribuicao das solicitacoes.</p>
+    <h1>Relatórios operacionais</h1>
+    <p>SLA, volume e distribuição das solicitações.</p>
   </div>
   <div class="title-actions">
     <a class="btn btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.export_csv') }}"><i class="fa-solid fa-file-csv me-2"></i>Exportar CSV</a>
@@ -14,7 +14,7 @@
 <section class="metrics">
   <div class="metric-card"><strong>{{ metrics.total }}</strong><span>Total</span></div>
   <div class="metric-card"><strong>{{ metrics.active }}</strong><span>Ativas</span></div>
-  <div class="metric-card"><strong>{{ metrics.concluded }}</strong><span>Concluidas</span></div>
+  <div class="metric-card"><strong>{{ metrics.concluded }}</strong><span>Concluídas</span></div>
   <div class="metric-card warning"><strong>{{ metrics.due_today }}</strong><span>Vencem hoje</span></div>
   <div class="metric-card danger"><strong>{{ metrics.overdue }}</strong><span>Atrasadas</span></div>
 </section>
@@ -29,14 +29,14 @@
     <div class="bar">
       <span style="width: {{ metrics.sla_percent }}%"></span>
     </div>
-    <p class="muted">{{ metrics.overdue_percent }}% das solicitacoes estao atrasadas.</p>
+    <p class="muted">{{ metrics.overdue_percent }}% das solicitações estão atrasadas.</p>
   </article>
 
   <article class="panel">
     <h2>Por status</h2>
     <ul class="plain-list metric-list">
       {% for name, count in metrics.by_status.items() %}
-        <li><span>{{ name }}</span><strong>{{ count }}</strong></li>
+        <li><span>{{ name|status_label }}</span><strong>{{ count }}</strong></li>
       {% else %}
         <li>Nenhum dado.</li>
       {% endfor %}
@@ -47,7 +47,7 @@
     <h2>Por prioridade</h2>
     <ul class="plain-list metric-list">
       {% for name, count in metrics.by_priority.items() %}
-        <li><span>{{ name }}</span><strong>{{ count }}</strong></li>
+        <li><span>{{ name|priority_label }}</span><strong>{{ count }}</strong></li>
       {% else %}
         <li>Nenhum dado.</li>
       {% endfor %}
@@ -55,7 +55,7 @@
   </article>
 
   <article class="panel">
-    <h2>Top categorias</h2>
+    <h2>Principais categorias</h2>
     <ul class="plain-list metric-list">
       {% for name, count in metrics.by_category %}
         <li><span>{{ name }}</span><strong>{{ count }}</strong></li>
@@ -76,11 +76,11 @@
       <thead class="table-light">
         <tr>
           <th class="px-4">ID</th>
-          <th>Titulo</th>
+          <th>Título</th>
           <th>Status</th>
           <th>Prioridade</th>
           <th>Solicitante</th>
-          <th>Responsavel</th>
+          <th>Responsável</th>
           <th>Prazo</th>
           <th class="px-4"></th>
         </tr>
@@ -99,7 +99,7 @@
               </span>
             </td>
             <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
-            <td>{{ ticket.priority }}</td>
+            <td>{{ ticket.priority|priority_label }}</td>
             <td>{{ ticket.requester.name if ticket.requester else "-" }}</td>
             <td>{{ ticket.assignee.name if ticket.assignee else "-" }}</td>
             <td>
@@ -109,7 +109,7 @@
             <td class="px-4"><a class="btn btn-sm btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}"><i class="fa-solid fa-folder-open me-2"></i>Abrir</a></td>
           </tr>
         {% else %}
-          <tr><td colspan="8" class="empty text-center text-muted py-4">Nenhuma solicitacao atrasada.</td></tr>
+          <tr><td colspan="8" class="empty text-center text-muted py-4">Nenhuma solicitação atrasada.</td></tr>
         {% endfor %}
       </tbody>
     </table>

@@ -31,7 +31,7 @@ DUE_STATES = [
 ]
 SORT_OPTIONS = [
     ("recent", "Mais recentes"),
-    ("due", "Prazo mais proximo"),
+    ("due", "Prazo mais próximo"),
     ("oldest", "Mais antigas"),
     ("priority", "Prioridade"),
 ]
@@ -125,7 +125,7 @@ def collect_custom_data(category):
         if raw_value:
             values[field.name] = raw_value
     if missing:
-        raise BadRequest(f"Preencha os campos obrigatorios: {', '.join(missing)}.")
+        raise BadRequest(f"Preencha os campos obrigatórios: {', '.join(missing)}.")
     return values
 
 
@@ -247,19 +247,19 @@ def build_ticket_csv(rows):
     writer.writerow(
         [
             "ID",
-            "Titulo",
+            "Título",
             "Status",
             "SLA",
             "Prioridade",
             "Solicitante",
-            "Responsavel",
+            "Responsável",
             "Categoria",
             "Filial",
             "Prazo",
             "Criado em",
             "Atualizado em",
             "Tempo pausado",
-            "Campos dinamicos",
+            "Campos dinâmicos",
         ]
     )
     for ticket in rows:
@@ -357,14 +357,14 @@ def create_ticket():
     form = TicketForm()
     configure_ticket_form(form)
     if len(form.category_id.choices) <= 1:
-        flash("Cadastre ao menos uma categoria ativa antes de abrir solicitacoes.", "warning")
+        flash("Cadastre ao menos uma categoria ativa antes de abrir solicitações.", "warning")
         return redirect(url_for("admin.settings"))
 
     if form.validate_on_submit():
         category = db.session.get(Category, form.category_id.data)
         if not category or not category.active:
-            flash("Categoria invalida ou inativa.", "danger")
-            return render_template("tickets/form.html", form=form, title="Nova solicitacao", schema_map=category_schema_payload())
+            flash("Categoria inválida ou inativa.", "danger")
+            return render_template("tickets/form.html", form=form, title="Nova solicitação", schema_map=category_schema_payload())
 
         due_at = datetime.combine(form.due_at.data, time.max, tzinfo=timezone.utc)
         try:
@@ -392,13 +392,13 @@ def create_ticket():
             ]
             notify_many(
                 worker_ids,
-                "Nova solicitacao aberta",
+                "Nova solicitação aberta",
                 f"#{ticket.id} - {ticket.title}",
                 ticket_id=ticket.id,
                 exclude_user_id=current_user.id,
             )
             db.session.commit()
-            flash("Solicitacao criada com sucesso.", "success")
+            flash("Solicitação criada com sucesso.", "success")
             return redirect(url_for("tickets.detail", ticket_id=ticket.id))
         except BadRequest as exc:
             db.session.rollback()
@@ -406,9 +406,9 @@ def create_ticket():
         except Exception as exc:
             db.session.rollback()
             log_exception(exc, status_code=500)
-            flash(f"Nao foi possivel salvar a solicitacao: {exc}", "danger")
+            flash(f"Não foi possível salvar a solicitação: {exc}", "danger")
 
-    return render_template("tickets/form.html", form=form, title="Nova solicitacao", schema_map=category_schema_payload())
+    return render_template("tickets/form.html", form=form, title="Nova solicitação", schema_map=category_schema_payload())
 
 
 @bp.route("/<int:ticket_id>/editar", methods=["GET", "POST"])
@@ -416,7 +416,7 @@ def create_ticket():
 def edit(ticket_id):
     ticket = load_ticket_or_404(ticket_id)
     if not can_edit_ticket(current_user, ticket):
-        flash("Apenas solicitacoes abertas podem ser editadas pelo solicitante ou gestor.", "danger")
+        flash("Apenas solicitações abertas podem ser editadas pelo solicitante ou gestor.", "danger")
         return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
     form = TicketForm(obj=ticket)
@@ -430,7 +430,7 @@ def edit(ticket_id):
     if form.validate_on_submit():
         category = db.session.get(Category, form.category_id.data)
         if not category or (not category.active and category.id != ticket.category_id):
-            flash("Categoria invalida ou inativa.", "danger")
+            flash("Categoria inválida ou inativa.", "danger")
             return redirect(url_for("tickets.detail", ticket_id=ticket.id))
         before = {
             "title": ticket.title,
@@ -477,13 +477,13 @@ def edit(ticket_id):
             )
             notify_many(
                 [ticket.requester_id, ticket.assignee_id],
-                "Solicitacao editada",
+                "Solicitação editada",
                 f"#{ticket.id} foi editada por {current_user.name}.",
                 ticket_id=ticket.id,
                 exclude_user_id=current_user.id,
             )
             db.session.commit()
-            flash("Solicitacao atualizada com sucesso.", "success")
+            flash("Solicitação atualizada com sucesso.", "success")
             return redirect(url_for("tickets.detail", ticket_id=ticket.id))
         except BadRequest as exc:
             db.session.rollback()
@@ -491,13 +491,13 @@ def edit(ticket_id):
         except Exception as exc:
             db.session.rollback()
             log_exception(exc, status_code=500)
-            flash(f"Nao foi possivel editar a solicitacao: {exc}", "danger")
+            flash(f"Não foi possível editar a solicitação: {exc}", "danger")
 
     schema_map = category_schema_payload(include_category_id=ticket.category_id, values=ticket.custom_data or {})
     return render_template(
         "tickets/form.html",
         form=form,
-        title=f"Editar solicitacao #{ticket.id}",
+        title=f"Editar solicitação #{ticket.id}",
         ticket=ticket,
         editing=True,
         schema_map=schema_map,
@@ -532,13 +532,13 @@ def action(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
     form = TicketActionForm()
     if not form.validate_on_submit():
-        flash("Formulario invalido. Recarregue a pagina e tente novamente.", "danger")
+        flash("Formulário inválido. Recarregue a página e tente novamente.", "danger")
         return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
     assert_ticket_action_allowed(ticket, form.action.data)
     try:
         if form.action.data in {"pausar", "concluir", "cancelar"} and not (form.note.data or "").strip():
-            raise BadRequest("Informe uma observacao para esta acao.")
+            raise BadRequest("Informe uma observação para esta ação.")
         final_file = None
         if form.action.data == "concluir":
             final_attachments = add_ticket_attachments(ticket, form.final_files.data, current_user, "final", "FINAL")
@@ -554,7 +554,7 @@ def action(ticket_id):
         recipients = [ticket.requester_id, ticket.assignee_id]
         notify_many(
             recipients,
-            "Solicitacao atualizada",
+            "Solicitação atualizada",
             f"#{ticket.id} foi alterada para {ticket.status} por {current_user.name}.",
             ticket_id=ticket.id,
             exclude_user_id=current_user.id,
@@ -569,14 +569,14 @@ def action(ticket_id):
                 ticket_id=ticket.id,
                 exclude_user_id=current_user.id,
             )
-        flash("Acao registrada com sucesso.", "success")
+        flash("Ação registrada com sucesso.", "success")
     except BadRequest as exc:
         db.session.rollback()
         flash(str(exc.description), "danger")
     except Exception as exc:
         db.session.rollback()
         log_exception(exc, status_code=500)
-        flash(f"Nao foi possivel concluir a acao: {exc}", "danger")
+        flash(f"Não foi possível concluir a ação: {exc}", "danger")
     return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
 
@@ -590,12 +590,12 @@ def transfer(ticket_id):
     form = TicketTransferForm()
     configure_transfer_form(form)
     if not form.validate_on_submit():
-        flash("Selecione um responsavel valido.", "danger")
+        flash("Selecione um responsável válido.", "danger")
         return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
     assignee = db.session.get(User, form.assignee_id.data)
     if not assignee or not assignee.active or not assignee.has_permission("can_work_tickets"):
-        flash("Responsavel invalido ou inativo.", "danger")
+        flash("Responsável inválido ou inativo.", "danger")
         return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
     before = {"assignee_id": ticket.assignee_id, "status": ticket.status}
@@ -612,13 +612,13 @@ def transfer(ticket_id):
     )
     notify_many(
         [ticket.requester_id, previous_assignee_id, assignee.id],
-        "Solicitacao transferida",
+        "Solicitação transferida",
         f"#{ticket.id} agora esta com {assignee.name}.",
         ticket_id=ticket.id,
         exclude_user_id=current_user.id,
     )
     db.session.commit()
-    flash("Responsavel atualizado.", "success")
+    flash("Responsável atualizado.", "success")
     return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
 
@@ -632,8 +632,8 @@ def comment(ticket_id):
         audit("TicketComment", ticket.id, "created")
         notify_many(
             [ticket.requester_id, ticket.assignee_id],
-            "Novo comentario",
-            f"{current_user.name} comentou na solicitacao #{ticket.id}.",
+            "Novo comentário",
+            f"{current_user.name} comentou na solicitação #{ticket.id}.",
             ticket_id=ticket.id,
             exclude_user_id=current_user.id,
         )
@@ -641,12 +641,12 @@ def comment(ticket_id):
         send_event_emails(
             [ticket.requester_id, ticket.assignee_id],
             "comentario",
-            f"Service Desk: novo comentario na demanda #{ticket.id}",
-            f"{current_user.name} adicionou um novo comentario na demanda #{ticket.id} - {ticket.title}.",
+            f"Service Desk: novo comentário na demanda #{ticket.id}",
+            f"{current_user.name} adicionou um novo comentário na demanda #{ticket.id} - {ticket.title}.",
             ticket_id=ticket.id,
             exclude_user_id=current_user.id,
         )
-        flash("Comentario enviado.", "success")
+        flash("Comentário enviado.", "success")
     return redirect(url_for("tickets.detail", ticket_id=ticket.id))
 
 

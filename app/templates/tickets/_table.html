@@ -4,11 +4,11 @@
     <thead class="table-light">
       <tr>
         <th class="px-4">ID</th>
-        <th class="col-title">Titulo</th>
+        <th class="col-title">Título</th>
         <th>Status</th>
         <th>Prioridade</th>
         <th>Solicitante</th>
-        <th>Responsavel</th>
+        <th>Responsável</th>
         <th class="col-fields">Campos da categoria</th>
         <th>Prazo</th>
         <th class="px-4"></th>
@@ -27,8 +27,8 @@
               {% endif %}
             </span>
           </td>
-          <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status }}</span></td>
-          <td>{{ ticket.priority }}</td>
+          <td><span class="badge status-{{ ticket.status|lower|replace(' ', '-') }}">{{ ticket.status|status_label }}</span></td>
+          <td>{{ ticket.priority|priority_label }}</td>
           <td>{{ ticket.requester.name }}</td>
           <td>{{ ticket.assignee.name if ticket.assignee else "-" }}</td>
           <td class="ticket-fields">
@@ -47,7 +47,7 @@
           <td class="px-4"><a class="btn btn-sm btn-primary fw-bold shadow-sm" href="{{ url_for('tickets.detail', ticket_id=ticket.id) }}"><i class="fa-solid fa-folder-open me-2"></i>Abrir</a></td>
         </tr>
       {% else %}
-        <tr><td colspan="9" class="empty text-center text-muted py-4">Nenhuma solicitacao encontrada.</td></tr>
+        <tr><td colspan="9" class="empty text-center text-muted py-4">Nenhuma solicitação encontrada.</td></tr>
       {% endfor %}
     </tbody>
   </table>

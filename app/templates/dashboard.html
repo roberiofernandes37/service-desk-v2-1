@@ -3,7 +3,7 @@
 <section class="page-title dashboard-page-title">
   <div>
     <h1>Painel de controle</h1>
-    <p>Fila operacional, SLA e andamento das solicitacoes.</p>
+    <p>Fila operacional, SLA e andamento das solicitações.</p>
   </div>
 </section>
 
@@ -12,7 +12,7 @@
   <a class="metric-card info" href="{{ url_for('tickets.list_tickets', status='Aberta') }}"><span>Abertas na fila</span><strong>{{ counts.abertas }}</strong></a>
   <a class="metric-card primary-fill" href="{{ url_for('tickets.list_tickets', status='Em Andamento') }}"><span>Assumidas</span><strong>{{ counts.andamento }}</strong></a>
   <a class="metric-card warning" href="{{ url_for('tickets.list_tickets', status='Pausada') }}"><span>Pausadas</span><strong>{{ counts.pausadas }}</strong></a>
-  <a class="metric-card success" href="{{ url_for('tickets.list_tickets', status='Concluida') }}"><span>Concluidas</span><strong>{{ counts.concluidas }}</strong></a>
+  <a class="metric-card success" href="{{ url_for('tickets.list_tickets', status='Concluida') }}"><span>Concluídas</span><strong>{{ counts.concluidas }}</strong></a>
 </section>
 
 <section class="dashboard-charts">
@@ -37,7 +37,7 @@
         </ul>
       </div>
     {% else %}
-      <p class="empty small-empty">Nenhuma solicitacao ativa.</p>
+      <p class="empty small-empty">Nenhuma solicitação ativa.</p>
     {% endif %}
   </article>
 
@@ -64,7 +64,7 @@
 
 <section class="panel">
   <div class="panel-head">
-    <h2>Ultimas solicitacoes</h2>
+    <h2>Últimas solicitações</h2>
     <a href="{{ url_for('tickets.list_tickets') }}">Ver todas</a>
   </div>
   {% include "tickets/_table.html" with context %}

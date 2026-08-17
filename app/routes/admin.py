@@ -59,7 +59,7 @@ def build_audit_csv(rows):
     buffer = io.StringIO()
     buffer.write("\ufeff")
     writer = csv.writer(buffer, delimiter=";")
-    writer.writerow(["ID", "Data", "Usuario", "Entidade", "ID Entidade", "Acao", "IP", "Antes", "Depois"])
+    writer.writerow(["ID", "Data", "Usuário", "Entidade", "ID da entidade", "Ação", "IP", "Antes", "Depois"])
     for log in rows:
         writer.writerow(
             [
@@ -81,13 +81,13 @@ def build_error_csv(rows):
     buffer = io.StringIO()
     buffer.write("\ufeff")
     writer = csv.writer(buffer, delimiter=";")
-    writer.writerow(["ID", "Data", "Resolvido", "Usuario", "Tipo", "Mensagem", "Rota", "Metodo", "Status", "IP", "Payload"])
+    writer.writerow(["ID", "Data", "Resolvido", "Usuário", "Tipo", "Mensagem", "Rota", "Método", "Status", "IP", "Payload"])
     for log in rows:
         writer.writerow(
             [
                 log.id,
                 log.created_at.strftime("%d/%m/%Y %H:%M:%S"),
-                "Sim" if log.resolved else "Nao",
+                "Sim" if log.resolved else "Não",
                 log.user_name or (log.user.name if log.user else ""),
                 log.error_type,
                 log.error_message,
@@ -203,7 +203,7 @@ def format_bytes(value):
 def backup_status_label(status):
     return {
         "running": "Em andamento",
-        "success": "Concluido",
+        "success": "Concluído",
         "failed": "Falhou",
         "pruned": "Removido",
     }.get(status, status or "-")
@@ -273,9 +273,9 @@ def users():
     configure_user_form(form)
     if form.validate_on_submit():
         if User.query.filter_by(email=form.email.data.lower()).first():
-            flash("Este e-mail ja esta cadastrado.", "danger")
+            flash("Este e-mail já está cadastrado.", "danger")
         elif not form.password.data:
-            flash("Informe uma senha inicial para novo usuario.", "danger")
+            flash("Informe uma senha inicial para o novo usuário.", "danger")
         else:
             user = User(
                 name=form.name.data.strip(),
@@ -288,7 +288,7 @@ def users():
             db.session.flush()
             audit("User", user.id, "created", after={"email": user.email})
             db.session.commit()
-            flash("Usuario criado.", "success")
+            flash("Usuário criado.", "success")
             return redirect(url_for("admin.users"))
 
     return render_template(
@@ -308,7 +308,7 @@ def profiles():
     if form.validate_on_submit():
         name = form.name.data.strip()
         if AccessProfile.query.filter_by(name=name).first():
-            flash("Ja existe um perfil com este nome.", "danger")
+            flash("Já existe um perfil com este nome.", "danger")
         else:
             profile = AccessProfile(
                 name=name,
@@ -336,9 +336,9 @@ def edit_profile(profile_id):
         name = form.name.data.strip()
         duplicate = AccessProfile.query.filter(AccessProfile.name == name, AccessProfile.id != profile.id).first()
         if duplicate:
-            flash("Ja existe um perfil com este nome.", "danger")
+            flash("Já existe um perfil com este nome.", "danger")
         elif removes_own_user_management(current_user, profile, form.can_manage_users.data):
-            flash("Voce nao pode remover a permissao de gerir usuarios do proprio perfil.", "danger")
+            flash("Você não pode remover a permissão de gerir usuários do próprio perfil.", "danger")
         else:
             before = {
                 "name": profile.name,
@@ -385,11 +385,11 @@ def edit_user(user_id):
         email = form.email.data.lower()
         existing_user = User.query.filter(User.email == email, User.id != user.id).first()
         if existing_user:
-            flash("Este e-mail ja esta cadastrado para outro usuario.", "danger")
+            flash("Este e-mail já está cadastrado para outro usuário.", "danger")
         elif user.id == current_user.id and not form.active.data:
-            flash("Voce nao pode desativar o proprio usuario logado.", "danger")
+            flash("Você não pode desativar o próprio usuário logado.", "danger")
         elif is_changing_own_profile(current_user, user, form.profile_id.data):
-            flash("Voce nao pode alterar o proprio perfil de acesso.", "danger")
+            flash("Você não pode alterar o próprio perfil de acesso.", "danger")
         else:
             before = {
                 "name": user.name,
@@ -414,7 +414,7 @@ def edit_user(user_id):
                 },
             )
             db.session.commit()
-            flash("Usuario atualizado.", "success")
+            flash("Usuário atualizado.", "success")
             return redirect(url_for("admin.users"))
     return render_template("admin/user_form.html", form=form, user=user)
 
@@ -440,12 +440,12 @@ def reset_user_password(user_id):
 def toggle_user(user_id):
     user = db.get_or_404(User, user_id)
     if user.id == current_user.id:
-        flash("Voce nao pode desativar o proprio usuario logado.", "danger")
+        flash("Você não pode desativar o próprio usuário logado.", "danger")
         return redirect(url_for("admin.users"))
     user.active = not user.active
     audit("User", user.id, "activated" if user.active else "deactivated")
     db.session.commit()
-    flash("Status do usuario atualizado.", "success")
+    flash("Status do usuário atualizado.", "success")
     return redirect(url_for("admin.users"))
 
 
@@ -459,7 +459,7 @@ def settings():
     if category_form.submit.data and category_form.validate_on_submit():
         category_name = category_form.name.data.strip().upper()
         if category_name_exists(category_name):
-            flash("Ja existe uma categoria com este nome.", "danger")
+            flash("Já existe uma categoria com este nome.", "danger")
             return redirect(url_for("admin.settings"))
         category = Category(name=category_name, active=category_form.active.data)
         db.session.add(category)
@@ -490,7 +490,7 @@ def settings():
     if branch_form.submit.data and branch_form.validate_on_submit():
         branch_name = branch_form.name.data.strip()
         if branch_name_exists(branch_name):
-            flash("Ja existe uma filial com este nome.", "danger")
+            flash("Já existe uma filial com este nome.", "danger")
             return redirect(url_for("admin.settings"))
         branch = Branch(name=branch_name, kind=branch_form.kind.data.strip(), active=branch_form.active.data)
         db.session.add(branch)
@@ -573,7 +573,7 @@ def edit_category(category_id):
     if form.validate_on_submit():
         name = form.name.data.strip().upper()
         if category_name_exists(name, ignore_id=category.id):
-            flash("Ja existe uma categoria com este nome.", "danger")
+            flash("Já existe uma categoria com este nome.", "danger")
         else:
             before = {"name": category.name, "active": category.active}
             category.name = name
@@ -651,7 +651,7 @@ def edit_branch(branch_id):
     if form.validate_on_submit():
         name = form.name.data.strip()
         if branch_name_exists(name, ignore_id=branch.id):
-            flash("Ja existe uma filial com este nome.", "danger")
+            flash("Já existe uma filial com este nome.", "danger")
         else:
             before = {"name": branch.name, "kind": branch.kind, "active": branch.active}
             branch.name = name
@@ -704,7 +704,7 @@ def backups():
             settings_form = BackupSettingsForm()
             if settings_form.validate_on_submit():
                 if not schedule_times_valid(settings_form.schedule_times.data):
-                    flash("Informe horarios no formato HH:MM, separados por virgula.", "danger")
+                    flash("Informe horários no formato HH:MM, separados por vírgula.", "danger")
                 else:
                     config.enabled = settings_form.enabled.data
                     config.schedule_times = settings_form.schedule_times.data.strip()
@@ -713,7 +713,7 @@ def backups():
                     config.include_logs = settings_form.include_logs.data
                     db.session.commit()
                     audit("BackupConfig", config.id, "updated")
-                    flash("Configuracao de backup salva.", "success")
+                    flash("Configuração de backup salva.", "success")
                     return redirect(url_for("admin.backups"))
         elif action == "create":
             try:
@@ -726,24 +726,24 @@ def backups():
                 audit("BackupRun", run.id, "created", after={"file_name": run.file_name})
                 flash(f"Backup criado: {run.file_name}.", "success")
             except Exception as exc:
-                flash(f"Nao foi possivel criar backup: {exc}", "danger")
+                flash(f"Não foi possível criar o backup: {exc}", "danger")
             return redirect(url_for("admin.backups"))
         elif action == "restore":
             restore_form = BackupRestoreForm()
             if restore_form.validate_on_submit():
                 if restore_form.confirmation.data != "RESTAURAR":
-                    flash("Digite RESTAURAR para confirmar a restauracao.", "danger")
+                    flash("Digite RESTAURAR para confirmar a restauração.", "danger")
                     return redirect(url_for("admin.backups"))
                 source = db.session.get(BackupRun, int(restore_form.backup_id.data))
                 if not source or source.action != "backup" or source.status != "success":
-                    flash("Backup invalido para restauracao.", "danger")
+                    flash("Backup inválido para restauração.", "danger")
                     return redirect(url_for("admin.backups"))
                 try:
                     create_backup(user_id=current_user.id, include_uploads=True, include_logs=True, mode="pre-restore")
                     restore_backup(source, user_id=current_user.id)
-                    flash("Restauracao concluida. Reabra o sistema se notar dados antigos na tela.", "success")
+                    flash("Restauração concluída. Reabra o sistema se notar dados antigos na tela.", "success")
                 except Exception as exc:
-                    flash(f"Nao foi possivel restaurar backup: {exc}", "danger")
+                    flash(f"Não foi possível restaurar o backup: {exc}", "danger")
             return redirect(url_for("admin.backups"))
         elif action == "test":
             backup_id = parse_positive_int(request.form.get("backup_id"))
@@ -752,7 +752,7 @@ def backups():
                 validate_backup_run(source)
                 flash(f"Backup testado com sucesso: {source.file_name}.", "success")
             except Exception as exc:
-                flash(f"Backup invalido: {exc}", "danger")
+                flash(f"Backup inválido: {exc}", "danger")
             return redirect(url_for("admin.backups"))
 
     page = max(parse_positive_int(request.args.get("page")) or 1, 1)
@@ -846,7 +846,7 @@ def error_detail(log_id):
         log.resolved = request.form.get("resolved") == "yes"
         log.technical_note = request.form.get("technical_note", "").strip() or None
         db.session.commit()
-        flash("Diagnostico atualizado.", "success")
+        flash("Diagnóstico atualizado.", "success")
         return redirect(url_for("admin.error_detail", log_id=log.id))
     return render_template(
         "admin/error_detail.html",
